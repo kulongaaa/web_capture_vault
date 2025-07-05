@@ -1,0 +1,297 @@
+// 变量定义
+@primary-color: #3498db;
+@success-color: #27ae60;
+@error-color: #e74c3c;
+@warning-color: #f39c12;
+@text-color: #333;
+@border-color: #ddd;
+@background-color: #f8f9fa;
+
+// 基础样式重置
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: @text-color;
+  background: @background-color;
+}
+
+// Popup容器
+.popup-container {
+  width: 320px;
+  min-height: 400px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+// 头部
+.popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, @primary-color, #2980b9);
+  color: white;
+}
+
+.popup-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.settings-button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+}
+
+// 内容区域
+.popup-content {
+  padding: 20px;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+// 学习按钮
+.learning-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, @primary-color, #2980b9);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &.disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+.button-icon {
+  font-size: 18px;
+}
+
+.button-text {
+  font-weight: 500;
+}
+
+// 状态显示
+.status-display {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: #f8f9fa;
+  border-left: 4px solid @border-color;
+
+  &.learning {
+    border-left-color: @primary-color;
+    background: rgba(52, 152, 219, 0.1);
+  }
+
+  &.completed {
+    border-left-color: @success-color;
+    background: rgba(39, 174, 96, 0.1);
+  }
+
+  &.error {
+    border-left-color: @error-color;
+    background: rgba(231, 76, 60, 0.1);
+  }
+}
+
+.status-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid @primary-color;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.status-icon {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: bold;
+
+  &.success {
+    background: @success-color;
+    color: white;
+  }
+
+  &.error {
+    background: @error-color;
+    color: white;
+  }
+}
+
+.status-message {
+  font-size: 14px;
+  color: @text-color;
+}
+
+// 设置面板
+.settings-panel {
+  .settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid @border-color;
+
+    h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: @text-color;
+    }
+  }
+
+  .close-button {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #666;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: #f0f0f0;
+    }
+  }
+}
+
+.settings-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.setting-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  label {
+    font-size: 14px;
+    font-weight: 500;
+    color: @text-color;
+  }
+
+  input {
+    padding: 8px 12px;
+    border: 1px solid @border-color;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+
+    &:focus {
+      outline: none;
+      border-color: @primary-color;
+      box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    }
+  }
+}
+
+.settings-actions {
+  margin-top: 8px;
+}
+
+.save-button {
+  width: 100%;
+  padding: 10px 16px;
+  background: @primary-color;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover:not(:disabled) {
+    background: #2980b9;
+  }
+
+  &:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+  }
+}
+
+// 动画
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+// 响应式设计
+@media (max-width: 360px) {
+  .popup-container {
+    width: 280px;
+  }
+
+  .popup-header {
+    padding: 12px 16px;
+  }
+
+  .popup-content {
+    padding: 16px;
+  }
+
+  .popup-title {
+    font-size: 16px;
+  }
+} 
