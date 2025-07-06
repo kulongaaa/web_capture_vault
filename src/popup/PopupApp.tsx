@@ -38,7 +38,7 @@ const LearningButton: React.FC<{
         {isScanning ? '🔍' : '🎯'}
       </span>
       <span className="button-text">
-        {isScanning ? '正在扫描...' : disabled ? '正在学习中...' : '开始智能学习'}
+        {isScanning ? '正在扫描...' : disabled ? '正在学习中...' : '学习此网页知识'}
       </span>
       {isScanning && <div className="scan-progress"></div>}
     </button>
@@ -211,8 +211,12 @@ export const PopupApp: React.FC = () => {
   return (
     <div className="popup-container">
       <div className="popup-header">
-        <h1 className="popup-title">网页学习助手</h1>
-        <p className="popup-subtitle">AI驱动的智能内容分析平台</p>
+        <div className="logo-container">
+          <img src="assets/logo.png" alt="Noeton Logo" className="logo-image" />
+        </div>
+        <h1 className="popup-title">Noeton</h1>
+        <p className="popup-subtitle">Turn web into Noeton</p>
+        <p className="popup-subtitle">智能学习网页知识并收集，打造专属知识库</p>
       </div>
 
       <div className="popup-content">

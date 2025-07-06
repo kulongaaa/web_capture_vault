@@ -37,6 +37,13 @@ module.exports = (env, argv) => {
             MiniCssExtractPlugin.loader,
             'css-loader'
           ]
+        },
+        {
+          test: /\.(png|jpg|jpeg|gif|svg)$/,
+          type: 'asset/resource',
+          generator: {
+            filename: 'assets/[name][ext]'
+          }
         }
       ]
     },
@@ -51,7 +58,8 @@ module.exports = (env, argv) => {
         patterns: [
           { from: 'manifest.json', to: '.' },
           { from: 'popup.html', to: '.' },
-          { from: 'icons', to: 'icons' }
+          { from: 'icons', to: 'icons' },
+          { from: 'src/assets', to: 'assets' }
         ]
       })
     ],
