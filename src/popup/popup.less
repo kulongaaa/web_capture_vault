@@ -32,7 +32,7 @@ body {
 // 主容器 - 现代动感风格
 .popup-container {
   width: 420px;
-  height: 480px;
+  height: 500px;
   background: rgba(255, 255, 255, 0.95);
   box-shadow: 
     0 25px 80px rgba(0, 0, 0, 0.15),
@@ -123,15 +123,6 @@ body {
   z-index: 1;
   letter-spacing: -1px;
   animation: title-glow 4s ease-in-out infinite;
-  
-  &::before {
-    content: '🔮';
-    display: block;
-    font-size: 48px;
-    margin-bottom: 12px;
-    animation: icon-bounce 2s ease-in-out infinite;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
-  }
 }
 
 .popup-subtitle {
@@ -639,5 +630,28 @@ body {
   
   .feature-cards {
     grid-template-columns: 1fr;
+  }
+}
+
+// Logo样式
+.logo-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.logo-image {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+  
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
   }
 } 
