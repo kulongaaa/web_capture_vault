@@ -27,7 +27,8 @@ export interface LearningRequestMessage extends Message {
   type: 'LEARNING_REQUEST';
   data: {
     url: string;
-    html: string;
+    html?: string;
+    content?: WebContent;
   };
 }
 

@@ -1,16 +1,168 @@
-import { StatusUpdateMessage, OverlayMessage, LearningStatus } from '../types';
+import { StatusUpdateMessage, OverlayMessage, LearningStatus, WebContent } from '../types';
 import './content.css';
 
 /**
  * Content Script
- * 负责与页面交互，显示蒙层和状态信息
+ * 负责与页面交互，显示蒙层和状态信息，处理DOM内容
  */
 class ContentScript {
   private overlay: HTMLElement | null = null;
   private statusElement: HTMLElement | null = null;
+  private scanAnimation: HTMLElement | null = null;
+
+  // 需要移除的选择器
+  private static readonly REMOVE_SELECTORS = [
+    'script',
+    'style',
+    'noscript',
+    'iframe',
+    'embed',
+    'object',
+    'applet',
+    'canvas',
+    'svg',
+    'nav',
+    'header',
+    'footer',
+    'aside',
+    'menu',
+    'menuitem',
+    'dialog',
+    'details',
+    'summary',
+    '[style*="display: none"]',
+    '[style*="display:none"]',
+    '.ad',
+    '.advertisement',
+    '.ads',
+    '.banner',
+    '.sidebar',
+    '.navigation',
+    '.menu',
+    '.footer',
+    '.header',
+    '.comment',
+    '.comments',
+    '.social',
+    '.share',
+    '.related',
+    '.recommendation'
+  ];
 
   constructor() {
     this.initMessageListener();
+    this.initScanAnimationStyles();
+  }
+
+  /**
+   * 初始化扫描动画样式
+   */
+  private initScanAnimationStyles(): void {
+    if (!document.getElementById('scan-animation-styles')) {
+      const style = document.createElement('style');
+      style.id = 'scan-animation-styles';
+      style.textContent = `
+        .web-learning-scan-animation {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+          z-index: 999999;
+          overflow: hidden;
+        }
+        
+        .scan-line {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 2px;
+          background: linear-gradient(90deg, 
+            transparent 0%, 
+            #667eea 20%, 
+            #764ba2 50%, 
+            #667eea 80%, 
+            transparent 100%
+          );
+          box-shadow: 
+            0 0 10px rgba(102, 126, 234, 0.8),
+            0 0 20px rgba(118, 75, 162, 0.6),
+            0 0 30px rgba(102, 126, 234, 0.4);
+          animation: scan-sweep 2s ease-in-out;
+        }
+        
+        .scan-particles {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+        }
+        
+        .scan-particle {
+          position: absolute;
+          width: 4px;
+          height: 4px;
+          background: #667eea;
+          border-radius: 50%;
+          animation: scan-particle-fall 2s ease-in-out infinite;
+        }
+        
+        @keyframes scan-sweep {
+          0% {
+            transform: translateY(-2px);
+            opacity: 0;
+          }
+          10% {
+            opacity: 1;
+          }
+          90% {
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(100vh);
+            opacity: 0;
+          }
+        }
+        
+        @keyframes scan-particle-fall {
+          0% {
+            transform: translateY(-10px) scale(0);
+            opacity: 0;
+          }
+          50% {
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(100vh) scale(1);
+            opacity: 0;
+          }
+        }
+        
+        .scan-highlight {
+          position: absolute;
+          background: rgba(102, 126, 234, 0.1);
+          border: 1px solid rgba(102, 126, 234, 0.3);
+          border-radius: 4px;
+          animation: scan-highlight-pulse 2s ease-in-out;
+        }
+        
+        @keyframes scan-highlight-pulse {
+          0%, 100% {
+            opacity: 0;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 1;
+            transform: scale(1.05);
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    }
   }
 
   /**
@@ -28,8 +180,23 @@ class ContentScript {
    */
   private handleMessage(message: any, sendResponse: (response: any) => void): void {
     switch (message.type) {
+      case 'PING':
+        // 响应ping消息，表示content script已注入
+        sendResponse({ success: true, message: 'Content script is ready' });
+        break;
       case 'GET_PAGE_CONTENT':
         this.handleGetPageContent(sendResponse);
+        break;
+      case 'PROCESS_PAGE_CONTENT':
+        this.handleProcessPageContent(sendResponse);
+        break;
+      case 'START_SCAN_ANIMATION':
+        this.startScanAnimation();
+        sendResponse({ success: true });
+        break;
+      case 'STOP_SCAN_ANIMATION':
+        this.stopScanAnimation();
+        sendResponse({ success: true });
         break;
       case 'SHOW_OVERLAY':
         this.showOverlay(message.data?.message);
@@ -44,7 +211,96 @@ class ContentScript {
   }
 
   /**
-   * 处理获取页面内容请求
+   * 开始扫描动画
+   */
+  private startScanAnimation(): void {
+    this.stopScanAnimation(); // 确保之前的动画已停止
+
+    // 创建扫描动画容器
+    this.scanAnimation = document.createElement('div');
+    this.scanAnimation.className = 'web-learning-scan-animation';
+
+    // 创建扫描线
+    const scanLine = document.createElement('div');
+    scanLine.className = 'scan-line';
+    this.scanAnimation.appendChild(scanLine);
+
+    // 创建粒子效果
+    const particlesContainer = document.createElement('div');
+    particlesContainer.className = 'scan-particles';
+    
+    // 添加多个粒子
+    for (let i = 0; i < 20; i++) {
+      const particle = document.createElement('div');
+      particle.className = 'scan-particle';
+      particle.style.left = Math.random() * 100 + '%';
+      particle.style.animationDelay = Math.random() * 2 + 's';
+      particle.style.animationDuration = (1.5 + Math.random()) + 's';
+      particlesContainer.appendChild(particle);
+    }
+    
+    this.scanAnimation.appendChild(particlesContainer);
+
+    // 添加高亮效果
+    this.addScanHighlights();
+
+    // 添加到页面
+    document.body.appendChild(this.scanAnimation);
+
+    // 2秒后自动停止
+    setTimeout(() => {
+      this.stopScanAnimation();
+    }, 2000);
+  }
+
+  /**
+   * 停止扫描动画
+   */
+  private stopScanAnimation(): void {
+    if (this.scanAnimation) {
+      this.scanAnimation.remove();
+      this.scanAnimation = null;
+    }
+    
+    // 移除高亮效果
+    const highlights = document.querySelectorAll('.scan-highlight');
+    highlights.forEach(el => el.remove());
+  }
+
+  /**
+   * 添加扫描高亮效果
+   */
+  private addScanHighlights(): void {
+    // 选择一些重要的元素进行高亮
+    const importantElements = document.querySelectorAll('h1, h2, h3, p, img, .content, .main, article, section');
+    
+    importantElements.forEach((el, index) => {
+      if (index < 10) { // 限制高亮元素数量
+        const rect = el.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          const highlight = document.createElement('div');
+          highlight.className = 'scan-highlight';
+          highlight.style.left = rect.left + 'px';
+          highlight.style.top = rect.top + 'px';
+          highlight.style.width = rect.width + 'px';
+          highlight.style.height = rect.height + 'px';
+          highlight.style.animationDelay = (index * 0.1) + 's';
+          
+          document.body.appendChild(highlight);
+          
+          // 动画结束后移除
+          setTimeout(() => {
+            if (highlight.parentNode) {
+              highlight.remove();
+            }
+          }, 2000);
+        }
+      }
+    });
+  }
+
+  /**
+   * 处理获取页面内容请求（保持向后兼容）
    */
   private handleGetPageContent(sendResponse: (response: any) => void): void {
     const html = ContentScript.getPageHtml();
@@ -54,6 +310,171 @@ class ContentScript {
       html,
       url
     });
+  }
+
+  /**
+   * 处理页面内容并提取结构化数据
+   */
+  private handleProcessPageContent(sendResponse: (response: any) => void): void {
+    try {
+      const url = ContentScript.getPageUrl();
+      const content = ContentScript.processPageContent(url);
+      sendResponse({ success: true, data: content });
+    } catch (error) {
+      console.error('Failed to process page content:', error);
+      sendResponse({ 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  }
+
+  /**
+   * 处理页面内容，提取文本和图片
+   */
+  public static processPageContent(url: string): WebContent {
+    // 创建文档副本进行处理
+    const docClone = document.cloneNode(true) as Document;
+    
+    // 清理无用元素
+    ContentScript.removeUnwantedElements(docClone);
+    
+    // 提取标题
+    const title = ContentScript.extractTitle(docClone);
+    
+    // 提取文本内容
+    const text = ContentScript.extractText(docClone);
+    
+    // 提取图片
+    const images = ContentScript.extractImages(docClone, url);
+    
+    return {
+      title,
+      text,
+      images,
+      url,
+      timestamp: Date.now()
+    };
+  }
+
+  /**
+   * 移除无用的HTML元素
+   */
+  private static removeUnwantedElements(doc: Document): void {
+    this.REMOVE_SELECTORS.forEach(selector => {
+      const elements = doc.querySelectorAll(selector);
+      elements.forEach(el => el.remove());
+    });
+  }
+
+  /**
+   * 提取页面标题
+   */
+  private static extractTitle(doc: Document): string {
+    const titleElement = doc.querySelector('title');
+    if (titleElement) {
+      return titleElement.textContent?.trim() || '';
+    }
+    
+    const h1Element = doc.querySelector('h1');
+    if (h1Element) {
+      return h1Element.textContent?.trim() || '';
+    }
+    
+    return '无标题';
+  }
+
+  /**
+   * 提取文本内容
+   */
+  private static extractText(doc: Document): string {
+    const body = doc.body;
+    if (!body) return '';
+
+    // 移除脚本和样式元素
+    const scripts = body.querySelectorAll('script, style');
+    scripts.forEach(el => el.remove());
+
+    // 获取所有文本节点
+    const textNodes: string[] = [];
+    const walker = document.createTreeWalker(
+      body,
+      NodeFilter.SHOW_TEXT,
+      {
+        acceptNode: (node) => {
+          const text = node.textContent?.trim();
+          if (text && text.length > 0) {
+            // 过滤掉只包含空白字符的节点
+            if (/\S/.test(text)) {
+              return NodeFilter.FILTER_ACCEPT;
+            }
+          }
+          return NodeFilter.FILTER_REJECT;
+        }
+      }
+    );
+
+    let node;
+    while (node = walker.nextNode()) {
+      const text = node.textContent?.trim();
+      if (text) {
+        textNodes.push(text);
+      }
+    }
+
+    // 合并文本并清理
+    let fullText = textNodes.join(' ');
+    
+    // 移除多余的空白字符
+    fullText = fullText.replace(/\s+/g, ' ');
+    
+    // 移除特殊字符
+    fullText = fullText.replace(/[\r\n\t]/g, ' ');
+    
+    return fullText.trim();
+  }
+
+  /**
+   * 提取图片URL
+   */
+  private static extractImages(doc: Document, baseUrl: string): string[] {
+    const images: string[] = [];
+    const imgElements = doc.querySelectorAll('img');
+    
+    imgElements.forEach(img => {
+      const src = img.getAttribute('src');
+      const dataSrc = img.getAttribute('data-src');
+      const srcset = img.getAttribute('srcset');
+      
+      let imageUrl = src || dataSrc;
+      
+      if (imageUrl) {
+        // 处理相对URL
+        if (imageUrl.startsWith('//')) {
+          imageUrl = 'https:' + imageUrl;
+        } else if (imageUrl.startsWith('/')) {
+          const urlObj = new URL(baseUrl);
+          imageUrl = urlObj.origin + imageUrl;
+        } else if (!imageUrl.startsWith('http')) {
+          imageUrl = new URL(imageUrl, baseUrl).href;
+        }
+        
+        // 过滤掉小图标和装饰性图片
+        const width = img.getAttribute('width');
+        const height = img.getAttribute('height');
+        const alt = img.getAttribute('alt') || '';
+        
+        // 如果图片太小或者是图标，则跳过
+        if (width && parseInt(width) < 50) return;
+        if (height && parseInt(height) < 50) return;
+        if (alt.toLowerCase().includes('icon')) return;
+        
+        images.push(imageUrl);
+      }
+    });
+    
+    // 去重并返回
+    return [...new Set(images)];
   }
 
   /**
