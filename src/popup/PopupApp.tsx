@@ -1,96 +1,226 @@
 import React, { useState, useEffect } from 'react';
-import { LearningButton } from './components/LearningButton';
-import { StatusDisplay } from './components/StatusDisplay';
-import { SettingsPanel } from './components/SettingsPanel';
 import { LearningStatus } from '../types';
 
+// 功能卡片组件
+const FeatureCard: React.FC<{
+  icon: string;
+  title: string;
+  description: string;
+  isActive?: boolean;
+  onClick?: () => void;
+}> = ({ icon, title, description, isActive = false, onClick }) => {
+  return (
+    <div 
+      className={`feature-card ${isActive ? 'active' : ''}`}
+      onClick={onClick}
+    >
+      <span className="feature-icon">{icon}</span>
+      <div className="feature-title">{title}</div>
+      <div className="feature-desc">{description}</div>
+    </div>
+  );
+};
+
+// 学习按钮组件
+const LearningButton: React.FC<{ 
+  onStart: () => void; 
+  disabled?: boolean;
+  isScanning?: boolean;
+}> = ({ onStart, disabled = false, isScanning = false }) => {
+  return (
+    <button 
+      className={`learning-button ${disabled ? 'disabled' : ''} ${isScanning ? 'scanning' : ''}`}
+      onClick={onStart}
+      disabled={disabled}
+    >
+      <span className="button-icon">
+        {isScanning ? '🔍' : '🚀'}
+      </span>
+      <span className="button-text">
+        {isScanning ? '正在扫描...' : disabled ? '正在学习中...' : '开始智能学习'}
+      </span>
+      {isScanning && <div className="scan-progress"></div>}
+    </button>
+  );
+};
+
+// 状态显示组件
+const StatusDisplay: React.FC<{ status: LearningStatus; message: string }> = ({ status, message }) => {
+  if (status === LearningStatus.IDLE) {
+    return null;
+  }
+
+  return (
+    <div className={`status-display ${status}`}>
+      {status === LearningStatus.LEARNING && <div className="status-spinner"></div>}
+      {status === LearningStatus.COMPLETED && <span className="status-icon success">✓</span>}
+      {status === LearningStatus.ERROR && <span className="status-icon error">✗</span>}
+      <span className="status-message">{message}</span>
+    </div>
+  );
+};
+
+// 主应用组件
 export const PopupApp: React.FC = () => {
   const [status, setStatus] = useState<LearningStatus>(LearningStatus.IDLE);
   const [message, setMessage] = useState<string>('');
-  const [showSettings, setShowSettings] = useState<boolean>(false);
+  const [isScanning, setIsScanning] = useState<boolean>(false);
+  const [activeFeature, setActiveFeature] = useState<string>('learn');
 
   useEffect(() => {
+    console.log('PopupApp mounted');
     // 监听来自background的消息
-    chrome.runtime.onMessage.addListener((message) => {
-      if (message.type === 'STATUS_UPDATE') {
-        setStatus(message.data.status);
-        setMessage(message.data.message || '');
-      }
-    });
+    if (typeof chrome !== 'undefined' && chrome.runtime) {
+      chrome.runtime.onMessage.addListener((message) => {
+        console.log('Received message:', message);
+        if (message.type === 'STATUS_UPDATE') {
+          setStatus(message.data.status);
+          setMessage(message.data.message || '');
+        }
+      });
+    }
   }, []);
 
+  // 确保content script已注入
+  const ensureContentScriptInjected = async (tabId: number): Promise<boolean> => {
+    try {
+      // 尝试发送ping消息来检查content script是否已注入
+      await chrome.tabs.sendMessage(tabId, { type: 'PING' });
+      return true;
+    } catch (error) {
+      console.log('Content script not injected, injecting now...');
+      try {
+        // 注入content script
+        await chrome.scripting.executeScript({
+          target: { tabId },
+          files: ['content.js']
+        });
+        
+        // 注入CSS
+        await chrome.scripting.insertCSS({
+          target: { tabId },
+          files: ['content.css']
+        });
+        
+        // 等待一下让content script初始化
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        return true;
+      } catch (injectError) {
+        console.error('Failed to inject content script:', injectError);
+        return false;
+      }
+    }
+  };
+
+  // 开始扫描动画
+  const startScanAnimation = async (tabId: number): Promise<void> => {
+    return new Promise((resolve) => {
+      chrome.tabs.sendMessage(tabId, {
+        type: 'START_SCAN_ANIMATION'
+      }, () => {
+        // 扫描动画持续2秒
+        setTimeout(() => {
+          chrome.tabs.sendMessage(tabId, {
+            type: 'STOP_SCAN_ANIMATION'
+          }, resolve);
+        }, 2000);
+      });
+    });
+  };
+
   const handleLearningStart = async () => {
+    console.log('Learning start clicked');
     try {
       setStatus(LearningStatus.LEARNING);
-      setMessage('正在获取页面内容...');
+      setMessage('正在扫描页面...');
+      setIsScanning(true);
 
-      // 获取当前活动标签页
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      
-      if (!tab.id) {
-        throw new Error('无法获取当前标签页');
-      }
+      if (typeof chrome !== 'undefined' && chrome.tabs) {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        
+        if (!tab.id) {
+          throw new Error('无法获取当前标签页');
+        }
 
-      // 向content script发送消息，获取页面HTML
-      const response = await chrome.tabs.sendMessage(tab.id, {
-        type: 'GET_PAGE_CONTENT'
-      });
+        // 确保content script已注入
+        const injected = await ensureContentScriptInjected(tab.id);
+        if (!injected) {
+          throw new Error('无法注入内容脚本');
+        }
 
-      if (response && response.html) {
-        // 发送学习请求到background
-        chrome.runtime.sendMessage({
-          type: 'LEARNING_REQUEST',
-          data: {
-            url: response.url,
-            html: response.html
-          }
-        }, (response) => {
-          if (response && response.error) {
-            setStatus(LearningStatus.ERROR);
-            setMessage(response.error);
-          }
+        // 1. 开始扫描动画
+        await startScanAnimation(tab.id);
+        
+        setMessage('正在处理页面内容...');
+
+        // 2. 处理页面内容
+        console.log('Sending message to content script');
+        const response = await chrome.tabs.sendMessage(tab.id, {
+          type: 'PROCESS_PAGE_CONTENT'
         });
 
-        // 显示蒙层
-        chrome.runtime.sendMessage({
-          type: 'SHOW_OVERLAY',
-          data: { message: '正在学习该网页...' }
-        });
+        console.log('Content script response:', response);
+
+        if (response && response.success && response.data) {
+          setMessage('正在发送数据到服务器...');
+          
+          // 3. 发送学习请求到background
+          chrome.runtime.sendMessage({
+            type: 'LEARNING_REQUEST',
+            data: {
+              url: response.data.url,
+              content: response.data
+            }
+          }, (response) => {
+            if (response && response.error) {
+              setStatus(LearningStatus.ERROR);
+              setMessage(response.error);
+            }
+          });
+
+          // 4. 显示蒙层
+          chrome.runtime.sendMessage({
+            type: 'SHOW_OVERLAY',
+            data: { message: '正在学习该网页...' }
+          });
+        } else {
+          throw new Error('无法获取页面内容');
+        }
       } else {
-        throw new Error('无法获取页面内容');
+        throw new Error('Chrome API 不可用');
       }
     } catch (error) {
       console.error('Learning start failed:', error);
       setStatus(LearningStatus.ERROR);
       setMessage(error instanceof Error ? error.message : '启动学习失败');
+    } finally {
+      setIsScanning(false);
     }
+  };
+
+  const handleFeatureClick = (feature: string) => {
+    setActiveFeature(feature);
+    // 这里可以添加不同功能的逻辑
+    console.log('Feature clicked:', feature);
   };
 
   return (
     <div className="popup-container">
       <div className="popup-header">
         <h1 className="popup-title">网页学习助手</h1>
-        <button 
-          className="settings-button"
-          onClick={() => setShowSettings(!showSettings)}
-          title="设置"
-        >
-          ⚙️
-        </button>
+        <p className="popup-subtitle">AI驱动的智能内容分析平台</p>
       </div>
 
       <div className="popup-content">
-        {showSettings ? (
-          <SettingsPanel onClose={() => setShowSettings(false)} />
-        ) : (
-          <>
-            <StatusDisplay status={status} message={message} />
-            <LearningButton 
-              onStart={handleLearningStart}
-              disabled={status === LearningStatus.LEARNING}
-            />
-          </>
-        )}
+        
+        <StatusDisplay status={status} message={message} />
+        
+        <LearningButton 
+          onStart={handleLearningStart}
+          disabled={status === LearningStatus.LEARNING}
+          isScanning={isScanning}
+        />
       </div>
     </div>
   );

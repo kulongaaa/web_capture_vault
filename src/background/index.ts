@@ -1,4 +1,3 @@
-import { HtmlProcessor } from '../utils/htmlProcessor';
 import { ApiService } from '../utils/apiService';
 import { 
   LearningRequestMessage, 
@@ -10,7 +9,7 @@ import {
 
 /**
  * Background Service Worker
- * 负责处理HTML内容提取和与API通信
+ * 负责数据处理、转发、存储和网络请求
  */
 class BackgroundService {
   constructor() {
@@ -62,14 +61,20 @@ class BackgroundService {
     sender: any, 
     sendResponse: (response: any) => void
   ): Promise<void> {
-    const { url, html } = message.data;
-    
     try {
       // 发送状态更新
       await this.sendStatusUpdate(sender.tab?.id, 'learning', '正在处理网页内容...');
       
-      // 处理HTML内容
-      const content = HtmlProcessor.processHtml(html, url);
+      let content: WebContent;
+      
+      // 检查是否已经包含处理好的内容
+      if (message.data.content) {
+        // 如果popup已经处理好了内容，直接使用
+        content = message.data.content;
+      } else {
+        // 否则请求content script处理页面内容
+        content = await this.requestContentProcessing(sender.tab?.id);
+      }
       
       // 发送状态更新
       await this.sendStatusUpdate(sender.tab?.id, 'learning', '正在发送数据到服务器...');
@@ -102,6 +107,30 @@ class BackgroundService {
         error: errorMessage 
       });
     }
+  }
+
+  /**
+   * 请求content script处理页面内容
+   */
+  private async requestContentProcessing(tabId: number | undefined): Promise<WebContent> {
+    if (!tabId) {
+      throw new Error('无法获取标签页ID');
+    }
+
+    return new Promise((resolve, reject) => {
+      chrome.tabs.sendMessage(tabId, { type: 'PROCESS_PAGE_CONTENT' }, (response) => {
+        if (chrome.runtime.lastError) {
+          reject(new Error(chrome.runtime.lastError.message));
+          return;
+        }
+
+        if (response && response.success) {
+          resolve(response.data);
+        } else {
+          reject(new Error(response?.error || '处理页面内容失败'));
+        }
+      });
+    });
   }
 
   /**
