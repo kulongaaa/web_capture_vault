@@ -33,8 +33,9 @@ const LearningButton: React.FC<{
       onClick={onStart}
       disabled={disabled}
     >
+      <div className="button-border"></div>
       <span className="button-icon">
-        {isScanning ? '🔍' : '🚀'}
+        {isScanning ? '🔍' : '🎯'}
       </span>
       <span className="button-text">
         {isScanning ? '正在扫描...' : disabled ? '正在学习中...' : '开始智能学习'}
@@ -46,16 +47,18 @@ const LearningButton: React.FC<{
 
 // 状态显示组件
 const StatusDisplay: React.FC<{ status: LearningStatus; message: string }> = ({ status, message }) => {
-  if (status === LearningStatus.IDLE) {
-    return null;
-  }
-
   return (
     <div className={`status-display ${status}`}>
+      {status === LearningStatus.IDLE && (
+        <>
+          <span className="status-icon idle">💤</span>
+          <span className="status-message">空闲中，准备就绪</span>
+        </>
+      )}
       {status === LearningStatus.LEARNING && <div className="status-spinner"></div>}
       {status === LearningStatus.COMPLETED && <span className="status-icon success">✓</span>}
       {status === LearningStatus.ERROR && <span className="status-icon error">✗</span>}
-      <span className="status-message">{message}</span>
+      {status !== LearningStatus.IDLE && <span className="status-message">{message}</span>}
     </div>
   );
 };
@@ -119,12 +122,12 @@ export const PopupApp: React.FC = () => {
       chrome.tabs.sendMessage(tabId, {
         type: 'START_SCAN_ANIMATION'
       }, () => {
-        // 扫描动画持续2秒
+        // 按钮进度条1.5秒完成，但等待扫描线动画完成
         setTimeout(() => {
           chrome.tabs.sendMessage(tabId, {
             type: 'STOP_SCAN_ANIMATION'
           }, resolve);
-        }, 2000);
+        }, 2000); // 保持扫描线动画的原有时间
       });
     });
   };
