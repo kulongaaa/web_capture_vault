@@ -333,20 +333,20 @@ class ContentScript {
    * 处理页面内容，提取文本和图片
    */
   public static processPageContent(url: string): WebContent {
-    // 创建文档副本进行处理
-    const docClone = document.cloneNode(true) as Document;
+    // 直接使用原始document，不用clone
+    const doc = document;
     
     // 清理无用元素
-    ContentScript.removeUnwantedElements(docClone);
+    ContentScript.removeUnwantedElements(doc);
     
     // 提取标题
-    const title = ContentScript.extractTitle(docClone);
+    const title = ContentScript.extractTitle(doc);
     
     // 提取文本内容
-    const text = ContentScript.extractText(docClone);
+    const text = ContentScript.extractText(doc);
     
     // 提取图片
-    const images = ContentScript.extractImages(docClone, url);
+    const images = ContentScript.extractImages(doc, url);
     
     return {
       title,
@@ -435,46 +435,58 @@ class ContentScript {
   }
 
   /**
-   * 提取图片URL
+   * 提取飞书文档图片URL（严格匹配docx-image-block结构）
    */
   private static extractImages(doc: Document, baseUrl: string): string[] {
     const images: string[] = [];
-    const imgElements = doc.querySelectorAll('img');
+    const seenIds = new Set<string>();
     
-    imgElements.forEach(img => {
-      const src = img.getAttribute('src');
-      const dataSrc = img.getAttribute('data-src');
-      const srcset = img.getAttribute('srcset');
+    // 查找所有严格匹配的docx-image-block
+    const blocks = doc.querySelectorAll('div.block.docx-image-block[data-block-type="image"]');
+    console.log('Found blocks:', blocks.length);
+    
+    blocks.forEach((block, index) => {
+      // 获取block-id作为唯一标识
+      const blockId = block.getAttribute('data-block-id');
+      const recordId = block.getAttribute('data-record-id');
+      const uniqueId = blockId || recordId;
       
-      let imageUrl = src || dataSrc;
+      console.log(`Block ${index}:`, { blockId, recordId, uniqueId });
       
-      if (imageUrl) {
-        // 处理相对URL
-        if (imageUrl.startsWith('//')) {
-          imageUrl = 'https:' + imageUrl;
-        } else if (imageUrl.startsWith('/')) {
-          const urlObj = new URL(baseUrl);
-          imageUrl = urlObj.origin + imageUrl;
-        } else if (!imageUrl.startsWith('http')) {
-          imageUrl = new URL(imageUrl, baseUrl).href;
+      if (!uniqueId || seenIds.has(uniqueId)) {
+        console.log(`Skipping block ${index}: duplicate or no id`);
+        return;
+      }
+      
+      seenIds.add(uniqueId);
+      
+      // 在block内查找img元素
+      const img = block.querySelector('img');
+      if (img) {
+        let imageUrl = img.getAttribute('src');
+        console.log(`Block ${index} img src:`, imageUrl);
+        
+        if (imageUrl) {
+          // 处理相对URL
+          if (imageUrl.startsWith('//')) {
+            imageUrl = 'https:' + imageUrl;
+          } else if (imageUrl.startsWith('/')) {
+            const urlObj = new URL(baseUrl);
+            imageUrl = urlObj.origin + imageUrl;
+          } else if (!imageUrl.startsWith('http')) {
+            imageUrl = new URL(imageUrl, baseUrl).href;
+          }
+          
+          images.push(imageUrl);
+          console.log(`Added image URL:`, imageUrl);
         }
-        
-        // 过滤掉小图标和装饰性图片
-        const width = img.getAttribute('width');
-        const height = img.getAttribute('height');
-        const alt = img.getAttribute('alt') || '';
-        
-        // 如果图片太小或者是图标，则跳过
-        if (width && parseInt(width) < 50) return;
-        if (height && parseInt(height) < 50) return;
-        if (alt.toLowerCase().includes('icon')) return;
-        
-        images.push(imageUrl);
+      } else {
+        console.log(`Block ${index}: no img found`);
       }
     });
     
-    // 去重并返回
-    return [...new Set(images)];
+    console.log('Final images array:', images);
+    return images;
   }
 
   /**
