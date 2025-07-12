@@ -315,9 +315,17 @@ class ContentScript {
   /**
    * 处理页面内容并提取结构化数据
    */
-  private handleProcessPageContent(sendResponse: (response: any) => void): void {
+  private async handleProcessPageContent(sendResponse: (response: any) => void): Promise<void> {
     try {
       const url = ContentScript.getPageUrl();
+      // 如果是飞书文档页面，自动滚动并收集所有图片
+      if (document.querySelector('#mainBox .bear-web-x-container')) {
+        const images = await ContentScript.collectAllImagesWithScroll(url);
+        // 其它内容可按需补充
+        sendResponse({ success: true, data: { images, url, timestamp: Date.now() } });
+        return;
+      }
+      // 否则走原有逻辑
       const content = ContentScript.processPageContent(url);
       sendResponse({ success: true, data: content });
     } catch (error) {
@@ -487,6 +495,64 @@ class ContentScript {
     
     console.log('Final images array:', images);
     return images;
+  }
+
+  /**
+   * 自动滚动并动态收集所有图片URL，滚动结束后返回完整数组
+   */
+  public static async collectAllImagesWithScroll(baseUrl: string): Promise<string[]> {
+    const scrollContainer = document.querySelector('#mainBox .bear-web-x-container') as HTMLElement;
+    if (!scrollContainer) {
+      console.error('未找到滚动容器');
+      return [];
+    }
+    const stepSize = 50;
+    const interval = 10;
+    let currentScrollTop = scrollContainer.scrollTop;
+    const allImages: string[] = [];
+
+    function collectImages() {
+      console.log("查询一次");
+      const blocks = document.querySelectorAll('div.block.docx-image-block[data-block-type="image"]');
+      blocks.forEach(block => {
+        const img = block.querySelector('img');
+        if (img) {
+          let imageUrl = img.getAttribute('src');
+          if (imageUrl) {
+            if (imageUrl.startsWith('//')) {
+              imageUrl = 'https:' + imageUrl;
+            } else if (imageUrl.startsWith('/')) {
+              const urlObj = new URL(baseUrl);
+              imageUrl = urlObj.origin + imageUrl;
+            } else if (!imageUrl.startsWith('http')) {
+              imageUrl = new URL(imageUrl, baseUrl).href;
+            }
+            // 去重
+            if (!allImages.includes(imageUrl)) {
+              allImages.push(imageUrl);
+            }
+          }
+        }
+      });
+    }
+
+    return new Promise<string[]>((resolve) => {
+      function scrollStep() {
+        collectImages();
+        currentScrollTop += stepSize;
+        scrollContainer.scrollTo({ top: currentScrollTop, behavior: 'smooth' });
+        // 判断是否到底
+        if (scrollContainer.scrollTop + scrollContainer.clientHeight >= scrollContainer.scrollHeight - 2) {
+          setTimeout(() => {
+            collectImages(); // 最后再收集一次
+            resolve(allImages);
+          }, 500);
+          return;
+        }
+        setTimeout(scrollStep, interval);
+      }
+      scrollStep();
+    });
   }
 
   /**
