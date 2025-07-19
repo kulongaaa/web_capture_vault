@@ -319,15 +319,20 @@ class ContentScript {
     try {
       const url = ContentScript.getPageUrl();
       // 如果是飞书文档页面，自动滚动并收集所有 block 并转为 markdown
-      if (document.querySelector('#mainBox .bear-web-x-container')) {
-        const { markdown, blocks } = await ContentScript.collectAllBlocksMarkdownWithScroll(url);
-        // 兼容 WebContent 类型，补全字段
-        sendResponse({ success: true, data: { title: '', text: '', images: [], url, timestamp: Date.now(), markdown, blocks } });
-        return;
+      if (url.includes('feishu')) {
+        if (document.querySelector('#mainBox .bear-web-x-container')) {
+          const { markdown, blocks } = await ContentScript.collectAllBlocksMarkdownWithScroll(url);
+          // 兼容 WebContent 类型，补全字段
+          sendResponse({ success: true, data: { title: '', text: '', images: [], url, timestamp: Date.now(), markdown, blocks } });
+          return;
+        }
       }
-      // 否则走原有逻辑
+      // 否则走普通网页逻辑
+      await ContentScript.scrollToBottom();
       const content = ContentScript.processPageContent(url);
-      sendResponse({ success: true, data: { ...content, markdown: undefined } });
+      const orderedContent = ContentScript.extractContentWithOrder(document.body, url);
+      const markdown = ContentScript.contentToMarkdown(orderedContent);
+      sendResponse({ success: true, data: { ...content, markdown } });
     } catch (error) {
       console.error('Failed to process page content:', error);
       sendResponse({ 
@@ -609,6 +614,74 @@ class ContentScript {
       quoteMd += '> ' + ContentScript.parseTextBlock(child) + '\n';
     });
     return quoteMd;
+  }
+
+  // 自动滑动到底部，确保懒加载内容加载完成
+  private static async scrollToBottom(): Promise<void> {
+    return new Promise((resolve) => {
+      let totalHeight = 0;
+      const distance = 300;
+      const timer = setInterval(() => {
+        const scrollHeight = document.body.scrollHeight;
+        window.scrollBy(0, distance);
+        totalHeight += distance;
+        if (totalHeight >= scrollHeight - window.innerHeight) {
+          clearInterval(timer);
+          setTimeout(resolve, 500); // 等待懒加载
+        }
+      }, 100);
+    });
+  }
+
+  // 按 DOM 顺序提取文本和图片
+  private static extractContentWithOrder(root: HTMLElement, baseUrl: string): Array<{ type: 'text' | 'image', content: string, alt?: string }> {
+    const result: Array<{ type: 'text' | 'image', content: string, alt?: string }> = [];
+    function walk(node: Node) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        const text = node.textContent?.replace(/\u200b/g, '').trim();
+        if (text && text.length > 0) {
+          result.push({ type: 'text', content: text });
+        }
+      } else if (node.nodeType === Node.ELEMENT_NODE) {
+        const el = node as HTMLElement;
+        if (el.tagName.toLowerCase() === 'img') {
+          let src = el.getAttribute('src') || '';
+          const alt = el.getAttribute('alt') || '';
+          if (src.startsWith('//')) {
+            src = 'https:' + src;
+          } else if (src.startsWith('/')) {
+            const urlObj = new URL(baseUrl);
+            src = urlObj.origin + src;
+          } else if (!src.startsWith('http')) {
+            src = new URL(src, baseUrl).href;
+          }
+          result.push({ type: 'image', content: src, alt });
+        } else {
+          // 跳过 script/style/noscript/iframe 等无关元素
+          const skipTags = ['script', 'style', 'noscript', 'iframe', 'canvas', 'svg', 'footer', 'header', 'nav', 'aside'];
+          if (!skipTags.includes(el.tagName.toLowerCase())) {
+            for (let child = node.firstChild; child; child = child.nextSibling) {
+              walk(child);
+            }
+          }
+        }
+      }
+    }
+    walk(root);
+    return result;
+  }
+
+  // 将内容数组转为 markdown
+  private static contentToMarkdown(contentArr: Array<{ type: 'text' | 'image', content: string, alt?: string }>): string {
+    let md = '';
+    for (const item of contentArr) {
+      if (item.type === 'text') {
+        md += item.content + '\n\n';
+      } else if (item.type === 'image') {
+        md += `![${item.alt || ''}](${item.content})\n\n`;
+      }
+    }
+    return md.trim();
   }
 
   /**
