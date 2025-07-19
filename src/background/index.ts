@@ -66,21 +66,24 @@ class BackgroundService {
       await this.sendStatusUpdate(sender.tab?.id, 'learning', '正在处理网页内容...');
       
       let content: WebContent;
-      
+      let sendToReq: string;
+      console.log("message", message);
       // 检查是否已经包含处理好的内容
       if (message.data.content) {
-        // 如果popup已经处理好了内容，直接使用
         content = message.data.content;
+        // 如果popup已经处理好了内容，直接使用
+        sendToReq = content.markdown || "";
       } else {
         // 否则请求content script处理页面内容
         content = await this.requestContentProcessing(sender.tab?.id);
+        sendToReq = content.markdown || "";
       }
       
       // 发送状态更新
       await this.sendStatusUpdate(sender.tab?.id, 'learning', '正在发送数据到服务器...');
       
       // 发送到API
-      const success = await ApiService.sendLearningData(content);
+      const success = await ApiService.sendLearningData(sendToReq);
       
       if (success) {
         // 发送成功响应

@@ -14,7 +14,7 @@ export class ApiService {
   /**
    * 发送学习数据到服务器
    */
-  public static async sendLearningData(content: WebContent): Promise<boolean> {
+  public static async sendLearningData(content: string): Promise<boolean> {
     try {
       const response = await fetch(`${this.API_BASE_URL}${this.API_ENDPOINTS.LEARN}`, {
         method: 'POST',

@@ -5,6 +5,7 @@ export interface WebContent {
   images: string[];
   url: string;
   timestamp: number;
+  markdown?: string; // 新增字段，支持 markdown 内容
 }
 
 // 学习状态类型
