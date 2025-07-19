@@ -318,16 +318,16 @@ class ContentScript {
   private async handleProcessPageContent(sendResponse: (response: any) => void): Promise<void> {
     try {
       const url = ContentScript.getPageUrl();
-      // 如果是飞书文档页面，自动滚动并收集所有图片
+      // 如果是飞书文档页面，自动滚动并收集所有 block 并转为 markdown
       if (document.querySelector('#mainBox .bear-web-x-container')) {
-        const images = await ContentScript.collectAllImagesWithScroll(url);
-        // 其它内容可按需补充
-        sendResponse({ success: true, data: { images, url, timestamp: Date.now() } });
+        const { markdown, blocks } = await ContentScript.collectAllBlocksMarkdownWithScroll(url);
+        // 兼容 WebContent 类型，补全字段
+        sendResponse({ success: true, data: { title: '', text: '', images: [], url, timestamp: Date.now(), markdown, blocks } });
         return;
       }
       // 否则走原有逻辑
       const content = ContentScript.processPageContent(url);
-      sendResponse({ success: true, data: content });
+      sendResponse({ success: true, data: { ...content, markdown: undefined } });
     } catch (error) {
       console.error('Failed to process page content:', error);
       sendResponse({ 
@@ -498,54 +498,41 @@ class ContentScript {
   }
 
   /**
-   * 自动滚动并动态收集所有图片URL，滚动结束后返回完整数组
+   * 自动滚动并动态收集所有 block，滚动结束后返回完整的 Markdown
    */
-  public static async collectAllImagesWithScroll(baseUrl: string): Promise<string[]> {
+  public static async collectAllBlocksMarkdownWithScroll(baseUrl: string): Promise<{ markdown: string, blocks: Element[] }> {
     const scrollContainer = document.querySelector('#mainBox .bear-web-x-container') as HTMLElement;
     if (!scrollContainer) {
       console.error('未找到滚动容器');
-      return [];
+      return { markdown: '', blocks: [] };
     }
     const stepSize = 50;
     const interval = 10;
     let currentScrollTop = scrollContainer.scrollTop;
-    const allImages: string[] = [];
+    const allBlocks: Element[] = [];
+    const seenBlockIds = new Set<string>();
 
-    function collectImages() {
-      console.log("查询一次");
-      const blocks = document.querySelectorAll('div.block.docx-image-block[data-block-type="image"]');
+    function collectBlocks() {
+      const blocks = document.querySelectorAll('.block[data-block-id]');
       blocks.forEach(block => {
-        const img = block.querySelector('img');
-        if (img) {
-          let imageUrl = img.getAttribute('src');
-          if (imageUrl) {
-            if (imageUrl.startsWith('//')) {
-              imageUrl = 'https:' + imageUrl;
-            } else if (imageUrl.startsWith('/')) {
-              const urlObj = new URL(baseUrl);
-              imageUrl = urlObj.origin + imageUrl;
-            } else if (!imageUrl.startsWith('http')) {
-              imageUrl = new URL(imageUrl, baseUrl).href;
-            }
-            // 去重
-            if (!allImages.includes(imageUrl)) {
-              allImages.push(imageUrl);
-            }
-          }
+        const blockId = block.getAttribute('data-block-id');
+        if (blockId && !seenBlockIds.has(blockId)) {
+          seenBlockIds.add(blockId);
+          allBlocks.push(block);
         }
       });
     }
 
-    return new Promise<string[]>((resolve) => {
+    return new Promise<{ markdown: string, blocks: Element[] }>((resolve) => {
       function scrollStep() {
-        collectImages();
+        collectBlocks();
         currentScrollTop += stepSize;
         scrollContainer.scrollTo({ top: currentScrollTop, behavior: 'smooth' });
-        // 判断是否到底
         if (scrollContainer.scrollTop + scrollContainer.clientHeight >= scrollContainer.scrollHeight - 2) {
           setTimeout(() => {
-            collectImages(); // 最后再收集一次
-            resolve(allImages);
+            collectBlocks(); // 最后再收集一次
+            const markdown = ContentScript.blocksToMarkdown(allBlocks, baseUrl);
+            resolve({ markdown, blocks: allBlocks });
           }, 500);
           return;
         }
@@ -553,6 +540,75 @@ class ContentScript {
       }
       scrollStep();
     });
+  }
+
+  private static blocksToMarkdown(blocks: Element[], baseUrl: string): string {
+    let md = '';
+    for (const block of blocks) {
+      const type = block.getAttribute('data-block-type');
+      switch (type) {
+        case 'text':
+          md += ContentScript.parseTextBlock(block) + '\n\n';
+          break;
+        case 'heading1':
+          md += '# ' + ContentScript.parseTextBlock(block) + '\n\n';
+          break;
+        case 'heading2':
+          md += '## ' + ContentScript.parseTextBlock(block) + '\n\n';
+          break;
+        case 'heading3':
+          md += '### ' + ContentScript.parseTextBlock(block) + '\n\n';
+          break;
+        case 'image':
+          md += ContentScript.parseImageBlock(block, baseUrl) + '\n\n';
+          break;
+        case 'bullet':
+          md += ContentScript.parseBulletBlock(block) + '\n';
+          break;
+        case 'quote_container':
+          md += ContentScript.parseQuoteBlock(block, baseUrl) + '\n\n';
+          break;
+        default:
+          break;
+      }
+    }
+    console.log("md", md);
+    return md.trim();
+  }
+
+  private static parseTextBlock(block: Element): string {
+    return block.textContent?.replace(/\u200b/g, '').trim() || '';
+  }
+
+  private static parseImageBlock(block: Element, baseUrl: string): string {
+    const img = block.querySelector('img');
+    if (img) {
+      let src = img.getAttribute('src') || '';
+      const alt = img.getAttribute('alt') || '';
+      if (src.startsWith('//')) {
+        src = 'https:' + src;
+      } else if (src.startsWith('/')) {
+        const urlObj = new URL(baseUrl);
+        src = urlObj.origin + src;
+      } else if (!src.startsWith('http')) {
+        src = new URL(src, baseUrl).href;
+      }
+      return `![${alt}](${src})`;
+    }
+    return '';
+  }
+
+  private static parseBulletBlock(block: Element): string {
+    return '- ' + block.textContent?.replace(/\u200b/g, '').trim();
+  }
+
+  private static parseQuoteBlock(block: Element, baseUrl: string): string {
+    const children = block.querySelectorAll('.block[data-block-id]');
+    let quoteMd = '';
+    children.forEach(child => {
+      quoteMd += '> ' + ContentScript.parseTextBlock(child) + '\n';
+    });
+    return quoteMd;
   }
 
   /**
