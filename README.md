@@ -6,7 +6,7 @@
 
 ## 封面
 
-![网页学习助手封面](cover.png)
+<img src="cover.png" alt="网页学习助手封面" width="200"/>
 
 ## 功能特性
 
