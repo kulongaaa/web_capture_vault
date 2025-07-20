@@ -14,7 +14,6 @@ const FeatureCard: React.FC<{
       className={`feature-card ${isActive ? 'active' : ''}`}
       onClick={onClick}
     >
-      <span className="feature-icon">{icon}</span>
       <div className="feature-title">{title}</div>
       <div className="feature-desc">{description}</div>
     </div>
@@ -34,9 +33,6 @@ const LearningButton: React.FC<{
       disabled={disabled}
     >
       <div className="button-border"></div>
-      <span className="button-icon">
-        {isScanning ? '🔍' : '🎯'}
-      </span>
       <span className="button-text">
         {isScanning ? '正在扫描...' : disabled ? '正在学习中...' : '学习此网页知识'}
       </span>
@@ -51,13 +47,10 @@ const StatusDisplay: React.FC<{ status: LearningStatus; message: string }> = ({ 
     <div className={`status-display ${status}`}>
       {status === LearningStatus.IDLE && (
         <>
-          <span className="status-icon idle">💤</span>
           <span className="status-message">空闲中，准备就绪</span>
         </>
       )}
       {status === LearningStatus.LEARNING && <div className="status-spinner"></div>}
-      {status === LearningStatus.COMPLETED && <span className="status-icon success">✓</span>}
-      {status === LearningStatus.ERROR && <span className="status-icon error">✗</span>}
       {status !== LearningStatus.IDLE && <span className="status-message">{message}</span>}
     </div>
   );
