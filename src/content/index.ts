@@ -332,7 +332,10 @@ class ContentScript {
       const content = ContentScript.processPageContent(url);
       const orderedContent = ContentScript.extractContentWithOrder(document.body, url);
       const markdown = ContentScript.contentToMarkdown(orderedContent);
-      sendResponse({ success: true, data: { ...content, markdown } });
+      // 优化markdown
+      const optimizedMarkdown = await ContentScript.optimizeMarkdownWithDeepSeek(markdown);
+      console.log("optimizedMarkdown", optimizedMarkdown);
+      sendResponse({ success: true, data: { ...content, markdown: optimizedMarkdown } });
     } catch (error) {
       console.error('Failed to process page content:', error);
       sendResponse({ 
@@ -682,6 +685,31 @@ class ContentScript {
       }
     }
     return md.trim();
+  }
+
+  // 调用DeepSeek API优化markdown
+  private static async optimizeMarkdownWithDeepSeek(markdown: string): Promise<string> {
+    const apiKey = 'sk-cfbf1247a20548e68948585fea077f92';
+    const endpoint = 'https://api.deepseek.com/v1/chat/completions';
+    const prompt = `你将收到一份由网页技术知识博客内容清洗得到的 markdown 文档，但其中仍可能包含以下问题：\n\n- 无关的广告内容\n- 多余的导航、侧边栏、页脚等无关信息\n- 冗余的图片（如广告图、装饰图、无意义的 banner 等）\n- 多余或杂乱的换行、空行\n- 其他与正文无关的内容\n\n请你作为一名专业的内容整理助手，帮我进一步清洗和优化这份 markdown，具体要求如下：\n\n1. 去除所有与正文无关的内容，如广告、导航、页脚、侧边栏、推荐、评论、分享等。\n2. 只保留与技术知识相关的正文内容，包括标题、正文、代码块、关键图片（如与技术内容直接相关的示意图、流程图等）。\n3. 删除冗余的图片，只保留对理解正文有帮助的图片，并去除无意义的图片。\n4. 整理段落结构，合并多余的空行，保持 markdown 格式清晰、简洁。\n5. 如有必要，对内容进行适当的总结和归纳，使其更易于理解和复用。\n6. 输出一份干净、结构清晰的 markdown 文档，不包含任何与正文无关的内容。\n\n请严格按照上述要求处理输入的 markdown，并只输出最终优化后的 markdown 内容。`;
+    const messages = [
+      { role: 'system', content: prompt },
+      { role: 'user', content: markdown }
+    ];
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages,
+      })
+    });
+    if (!res.ok) throw new Error('DeepSeek API error: ' + res.statusText);
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content?.trim() || '';
   }
 
   /**
