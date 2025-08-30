@@ -1,7 +1,65 @@
 import React, { useState, useEffect } from 'react';
 import { LearningStatus } from '../types';
+import { ApiService } from '../utils/apiService';
 
-// 功能卡片组件
+// 服务状态组件
+const ServiceStatus: React.FC = () => {
+  const [localStatus, setLocalStatus] = useState<{
+    available: boolean;
+    version?: string;
+    error?: string;
+  }>({ available: false });
+  const [checking, setChecking] = useState(false);
+
+  const checkLocalService = async () => {
+    setChecking(true);
+    try {
+      const status = await ApiService.checkLocalAppStatus();
+      setLocalStatus(status);
+    } catch (error) {
+      setLocalStatus({
+        available: false,
+        error: (error as any).message || '连接失败'
+      });
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  useEffect(() => {
+    checkLocalService();
+  }, []);
+
+  return (
+    <div className="service-status">
+      <div className="status-header">
+        <span className="status-title">本地笔记应用</span>
+        <button 
+          className="refresh-btn" 
+          onClick={checkLocalService}
+          disabled={checking}
+          title="刷新状态"
+        >
+          {checking ? '⚙️' : '🔄'}
+        </button>
+      </div>
+      <div className={`status-indicator ${localStatus.available ? 'online' : 'offline'}`}>
+        <span className="status-dot"></span>
+        <span className="status-text">
+          {localStatus.available 
+            ? `在线${localStatus.version ? ` (v${localStatus.version})` : ''}` 
+            : `离线${localStatus.error ? ` - ${localStatus.error}` : ''}`
+          }
+        </span>
+      </div>
+      {!localStatus.available && (
+        <div className="status-tip">
+          请确保本地笔记应用已启动并运行在 127.0.0.1:3001
+        </div>
+      )}
+    </div>
+  );
+};
 const FeatureCard: React.FC<{
   icon: string;
   title: string;
@@ -213,6 +271,8 @@ export const PopupApp: React.FC = () => {
       </div>
 
       <div className="popup-content">
+        
+        <ServiceStatus />
         
         <StatusDisplay status={status} message={message} />
         
