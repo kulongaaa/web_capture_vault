@@ -32,7 +32,7 @@ body {
 // 主容器 - 现代动感风格
 .popup-container {
   width: 420px;
-  height: 500px;
+  height: 600px; // 增加高度以适应更多内容
   background: rgba(255, 255, 255, 0.95);
   box-shadow: 
     0 25px 80px rgba(0, 0, 0, 0.15),
@@ -41,6 +41,8 @@ body {
   overflow: hidden;
   position: relative;
   backdrop-filter: blur(30px);
+  display: flex;
+  flex-direction: column;
   // animation: container-float 6s ease-in-out infinite;
   
   // // 动态背景装饰
@@ -137,13 +139,14 @@ body {
 
 // 内容区域 - 多层次布局
 .popup-content {
-  padding: 40px 36px;
-  min-height: 460px;
+  padding: 24px 36px 36px; // 减少上下内边距
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 20px; // 减少间距
   position: relative;
   background: @background-white;
+  overflow-y: auto; // 允许滚动
 }
 
 // 功能卡片区域
@@ -653,5 +656,135 @@ body {
   &:hover {
     transform: scale(1.05);
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  }
+}
+
+// 服务状态样式 - 简洁高级设计
+.service-status {
+  margin-bottom: 20px; // 改为底部边距，确保不占用过多空间
+  
+  .status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, rgba(15, 15, 35, 0.03) 0%, rgba(26, 26, 46, 0.02) 100%);
+    border: 1px solid rgba(99, 102, 241, 0.12);
+    border-radius: 16px;
+    backdrop-filter: blur(20px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    
+    // 微妙的光泽效果
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.08), transparent);
+      transition: left 0.6s ease;
+    }
+    
+    &:hover {
+      background: linear-gradient(135deg, rgba(15, 15, 35, 0.05) 0%, rgba(26, 26, 46, 0.03) 100%);
+      border-color: rgba(99, 102, 241, 0.2);
+      box-shadow: 
+        0 8px 32px rgba(99, 102, 241, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      transform: translateY(-1px);
+      
+      &::before {
+        left: 100%;
+      }
+    }
+  }
+  
+  .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+    position: relative;
+    
+    &.online {
+      background: linear-gradient(135deg, @success-color 0%, #059669 100%);
+      box-shadow: 
+        0 0 0 3px rgba(16, 185, 129, 0.2),
+        0 0 8px rgba(16, 185, 129, 0.4);
+      animation: online-glow 2s ease-in-out infinite;
+    }
+    
+    &.offline {
+      background: linear-gradient(135deg, @error-color 0%, #dc2626 100%);
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+    }
+  }
+  
+  .status-text {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 600;
+    color: @text-primary;
+    line-height: 1.4;
+    letter-spacing: 0.3px;
+  }
+  
+  .refresh-btn {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.05) 100%);
+    border: 1px solid rgba(99, 102, 241, 0.15);
+    padding: 8px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    color: @primary-color;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.3px;
+    backdrop-filter: blur(10px);
+    
+    &:hover:not(:disabled) {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(139, 92, 246, 0.08) 100%);
+      border-color: rgba(99, 102, 241, 0.25);
+      transform: translateY(-1px) scale(1.02);
+      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.15);
+      color: darken(@primary-color, 10%);
+    }
+    
+    &:active:not(:disabled) {
+      transform: translateY(0) scale(0.98);
+      transition: transform 0.1s ease;
+    }
+    
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+      transform: none;
+      
+      &:hover {
+        transform: none;
+        box-shadow: none;
+      }
+    }
+  }
+}
+
+// 优化后的在线状态发光动画
+@keyframes online-glow {
+  0%, 100% { 
+    box-shadow: 
+      0 0 0 3px rgba(16, 185, 129, 0.2),
+      0 0 8px rgba(16, 185, 129, 0.3);
+  }
+  50% { 
+    box-shadow: 
+      0 0 0 3px rgba(16, 185, 129, 0.3),
+      0 0 12px rgba(16, 185, 129, 0.5);
   }
 } 

@@ -32,31 +32,20 @@ const ServiceStatus: React.FC = () => {
 
   return (
     <div className="service-status">
-      <div className="status-header">
-        <span className="status-title">本地笔记应用</span>
+      <div className="status-indicator">
+        <div className={`status-dot ${localStatus.available ? 'online' : 'offline'}`}></div>
+        <span className="status-text">
+          {localStatus.available ? '本地服务在线' : '本地服务离线'}
+        </span>
         <button 
           className="refresh-btn" 
           onClick={checkLocalService}
           disabled={checking}
           title="刷新状态"
         >
-          {checking ? '⚙️' : '🔄'}
+          {checking ? '检查中...' : '刷新'}
         </button>
       </div>
-      <div className={`status-indicator ${localStatus.available ? 'online' : 'offline'}`}>
-        <span className="status-dot"></span>
-        <span className="status-text">
-          {localStatus.available 
-            ? `在线${localStatus.version ? ` (v${localStatus.version})` : ''}` 
-            : `离线${localStatus.error ? ` - ${localStatus.error}` : ''}`
-          }
-        </span>
-      </div>
-      {!localStatus.available && (
-        <div className="status-tip">
-          请确保本地笔记应用已启动并运行在 127.0.0.1:3001
-        </div>
-      )}
     </div>
   );
 };
