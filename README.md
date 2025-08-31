@@ -398,55 +398,13 @@ chmod 755 ~/Library/Application\ Support/NotesDesktopApp/
 
 本项目采用 [MIT License](LICENSE)，允许自由使用、修改和分发。
 
-### 贡献指南
-
-我们欢迎各种形式的贡献：
-
-1. **代码贡献**:
-   ```bash
-   # Fork 项目
-   git clone https://github.com/your-username/web-capture-vault.git
-   
-   # 创建特性分支
-   git checkout -b feature/amazing-feature
-   
-   # 提交更改
-   git commit -m 'Add some amazing feature'
-   
-   # 推送分支
-   git push origin feature/amazing-feature
-   
-   # 创建 Pull Request
-   ```
-
-2. **问题报告**: 通过 GitHub Issues 报告 bug 或提出建议
-3. **文档改进**: 帮助完善项目文档
-4. **测试反馈**: 提供不同环境下的测试反馈
-
-### 开发团队
-
-- **核心架构**: 系统设计与技术选型
-- **前端开发**: Chrome 插件与 React 界面
-- **后端开发**: Node.js 服务器与 API 设计
-- **产品设计**: 用户体验与交互设计
-
-## 🙏 致谢
-
-感谢以下开源项目和技术社区的支持：
-
-- **React**: 现代化的前端框架
-- **Electron**: 跨平台桌面应用框架
-- **Koa.js**: 轻量级 Node.js 框架
-- **TypeScript**: 类型安全的 JavaScript
-- **Chrome Extensions**: 强大的浏览器扩展能力
-
 ---
 
 <div align="center">
 
 **🌟 让每一次网页浏览，都成为理念世界的构建之旅 🌟**
 
-[![GitHub stars](https://img.shields.io/github/stars/username/web-capture-vault.svg?style=social&label=Star)](https://github.com/username/web-capture-vault)
-[![GitHub forks](https://img.shields.io/github/forks/username/web-capture-vault.svg?style=social&label=Fork)](https://github.com/username/web-capture-vault/fork)
+[![GitHub stars](https://img.shields.io/github/stars/username/web-capture-vault.svg?style=social&label=Star)](https://github.com/kulongaaa/web_capture_vault)
+[![GitHub forks](https://img.shields.io/github/forks/username/web-capture-vault.svg?style=social&label=Fork)](https://github.com/kulongaaa/web_capture_vault/fork)
 
 </div>
