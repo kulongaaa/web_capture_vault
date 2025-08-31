@@ -13,6 +13,7 @@ interface AppState {
   selectedFolder: string | null;
   isLoading: boolean;
   searchQuery: string;
+  error: string | null;
 }
 
 const App: React.FC = () => {
@@ -21,8 +22,9 @@ const App: React.FC = () => {
     folders: [],
     selectedNote: null,
     selectedFolder: null,
-    isLoading: false,
-    searchQuery: ''
+    isLoading: true, // 初始状态为加载中
+    searchQuery: '',
+    error: null
   });
 
   const [apiService] = useState(() => new NotesApiService());
@@ -33,23 +35,43 @@ const App: React.FC = () => {
   }, []);
 
   const loadInitialData = async () => {
-    setState(prev => ({ ...prev, isLoading: true }));
+    console.log('开始加载初始数据...');
+    setState(prev => ({ ...prev, isLoading: true, error: null }));
     
     try {
+      // 先测试连接
+      console.log('测试服务器连接...');
+      const isConnected = await apiService.testConnection();
+      if (!isConnected) {
+        throw new Error('无法连接到本地服务器 (http://127.0.0.1:3001)');
+      }
+      
+      console.log('调用 API 服务...');
       const [notesResult, foldersResult] = await Promise.all([
         apiService.getNotes({}),
         apiService.getFolders()
       ]);
 
+      console.log('数据加载成功:', {
+        notes: notesResult.notes.length,
+        folders: foldersResult.length
+      });
+
       setState(prev => ({
         ...prev,
         notes: notesResult.notes,
         folders: foldersResult,
-        isLoading: false
+        isLoading: false,
+        error: null
       }));
     } catch (error) {
       console.error('加载数据失败:', error);
-      setState(prev => ({ ...prev, isLoading: false }));
+      const errorMessage = error instanceof Error ? error.message : '未知错误';
+      setState(prev => ({ 
+        ...prev, 
+        isLoading: false, 
+        error: `加载失败: ${errorMessage}`
+      }));
     }
   };
 
@@ -155,33 +177,52 @@ const App: React.FC = () => {
 
   return (
     <div className="app">
-      <div className="app-layout">
-        <Sidebar
-          folders={state.folders}
-          selectedFolder={state.selectedFolder}
-          onSelectFolder={handleSelectFolder}
-          onCreateFolder={handleCreateFolder}
-          onSearch={handleSearch}
-          searchQuery={state.searchQuery}
-        />
-        
-        <div className="main-content">
-          <NoteList
-            notes={state.notes}
-            selectedNote={state.selectedNote}
-            onSelectNote={handleSelectNote}
-            onCreateNote={handleCreateNote}
-            onDeleteNote={handleDeleteNote}
-            isLoading={state.isLoading}
+      {state.error ? (
+        <div className="error-overlay">
+          <div className="error-message">
+            <h3>加载出错</h3>
+            <p>{state.error}</p>
+            <button onClick={loadInitialData} className="retry-btn">
+              重新连接
+            </button>
+          </div>
+        </div>
+      ) : state.isLoading ? (
+        <div className="loading-overlay">
+          <div className="loading-content">
+            <div className="loading-spinner"></div>
+            <p>正在加载笔记应用...</p>
+          </div>
+        </div>
+      ) : (
+        <div className="app-layout">
+          <Sidebar
+            folders={state.folders}
+            selectedFolder={state.selectedFolder}
+            onSelectFolder={handleSelectFolder}
+            onCreateFolder={handleCreateFolder}
+            onSearch={handleSearch}
+            searchQuery={state.searchQuery}
           />
           
-          <NoteEditor
-            note={state.selectedNote}
-            onUpdateNote={handleUpdateNote}
-            onCreateNote={handleCreateNote}
-          />
+          <div className="main-content">
+            <NoteList
+              notes={state.notes}
+              selectedNote={state.selectedNote}
+              onSelectNote={handleSelectNote}
+              onCreateNote={handleCreateNote}
+              onDeleteNote={handleDeleteNote}
+              isLoading={false}
+            />
+            
+            <NoteEditor
+              note={state.selectedNote}
+              onUpdateNote={handleUpdateNote}
+              onCreateNote={handleCreateNote}
+            />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

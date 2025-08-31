@@ -61,8 +61,26 @@ class ElectronApp {
       this.mainWindow.loadURL('http://localhost:3000');
       this.mainWindow.webContents.openDevTools();
     } else {
+      // 生产环境加载构建后的文件
       this.mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
+      // 在生产环境也打开开发者工具以便查看日志
+      this.mainWindow.webContents.openDevTools();
     }
+    
+    // 监听页面加载完成
+    this.mainWindow.webContents.once('dom-ready', () => {
+      console.log('DOM ready - 页面加载完成');
+    });
+    
+    // 监听页面加载错误
+    this.mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
+      console.error('页面加载失败:', { errorCode, errorDescription, validatedURL });
+    });
+    
+    // 监听控制台消息
+    this.mainWindow.webContents.on('console-message', (event, level, message, line, sourceId) => {
+      console.log(`[Renderer ${level}] ${message} (${sourceId}:${line})`);
+    });
 
     this.mainWindow.on('closed', () => {
       this.mainWindow = null;
