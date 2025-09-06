@@ -179,6 +179,7 @@
 
 /* Logo Container */
 .logo-container {
+  margin: 20px;
   width: 100%;
   height: 100%;
   display: flex;
@@ -194,10 +195,17 @@
   object-fit: contain;
   filter: brightness(1.1) contrast(1.1);
   transition: var(--transition-normal);
+  background: #ffffff;
+  border-radius: 20px;
+  border: 2px solid #333333;
+  padding: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .logo-image:hover {
   filter: brightness(1.3) contrast(1.2);
+  border-color: #555555;
+  background: #f8f8f8;
 }
 
 .brand-logo,
@@ -450,95 +458,121 @@
   border-color: #444444;
 }
 
-/* === Messages === */
+/* === 优化的消息容器 === */
 .messages-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  min-height: 0;
+}
+
+.messages-list {
   flex: 1;
   overflow-y: auto;
   padding: var(--space-6);
   scroll-behavior: smooth;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
 }
 
-.messages-container::-webkit-scrollbar {
-  width: 6px;
+.messages-list::-webkit-scrollbar {
+  width: 4px;
 }
 
-.messages-container::-webkit-scrollbar-track {
+.messages-list::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.messages-container::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: var(--radius-full);
+.messages-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
 }
 
-.messages-container::-webkit-scrollbar-thumb:hover {
-  background: var(--color-border-strong);
+.messages-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
+/* === 优化的消息气泡 === */
 .message {
-  margin-bottom: var(--space-6);
-  max-width: 80%;
+  width: 100%;
+  display: flex;
+  margin-bottom: 0;
 }
 
 .message.user {
-  margin-left: auto;
+  justify-content: flex-end;
 }
 
-.message.user .message-content {
-  background: #333333;
-  color: var(--color-white);
-  border-radius: var(--radius-2xl) var(--radius-2xl) var(--radius-sm) var(--radius-2xl);
+.message.assistant {
+  justify-content: flex-start;
 }
 
-.message.assistant .message-content {
-  background: #1a1a1a;
-  color: var(--color-white);
-  border-radius: var(--radius-2xl) var(--radius-2xl) var(--radius-2xl) var(--radius-sm);
+.message-bubble {
+  max-width: 75%;
+  min-width: 200px;
+  position: relative;
+}
+
+.message.user .message-bubble {
+  background: linear-gradient(135deg, #2a2a2a 0%, #404040 100%);
+  border-radius: 20px 20px 4px 20px;
+  border: 1px solid #404040;
+}
+
+.message.assistant .message-bubble {
+  background: linear-gradient(135deg, #1a1a1a 0%, #242424 100%);
+  border-radius: 20px 20px 20px 4px;
   border: 1px solid #333333;
 }
 
-.message.loading .message-content {
-  background: #1a1a1a;
-  color: #888888;
-  border-radius: var(--radius-2xl);
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
+.message.typing .message-bubble {
+  background: linear-gradient(135deg, #1a1a1a 0%, #242424 100%);
+  border-radius: 20px;
   border: 1px solid #333333;
-  padding: var(--space-6) var(--space-8);
-}
-
-.message.loading .message-content span {
-  font-style: italic;
-  opacity: 0.8;
 }
 
 .message-content {
   padding: var(--space-4) var(--space-6);
-  transition: var(--transition-normal);
-}
-
-.message-content:hover {
-  /* 移除hover变换 */
+  color: var(--color-white);
+  line-height: 1.6;
 }
 
 .message-content p {
   margin: 0;
-  line-height: 1.6;
   font-size: 0.95rem;
+  font-weight: 400;
 }
 
+.message-time {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.5);
+  padding: var(--space-1) var(--space-6) var(--space-3);
+  font-family: var(--font-mono);
+}
+
+.message.user .message-time {
+  text-align: right;
+}
+
+.message.assistant .message-time {
+  text-align: left;
+}
+
+/* === 优化的搜索结果 === */
 .search-results {
   margin-top: var(--space-4);
   padding-top: var(--space-4);
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .search-results h5 {
   margin: 0 0 var(--space-3);
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--color-gray-600);
+  color: rgba(255, 255, 255, 0.7);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -548,19 +582,20 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-3);
-  background: #242424;
+  background: rgba(255, 255, 255, 0.05);
   border-radius: var(--radius-lg);
   margin-bottom: var(--space-2);
   font-size: 0.85rem;
-  color: #888888;
-  border: 1px solid #333333;
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   transition: var(--transition-normal);
   cursor: pointer;
 }
 
 .result-item:hover {
-  background: #242424;
+  background: rgba(255, 255, 255, 0.08);
   color: var(--color-white);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .result-item svg {
@@ -569,15 +604,68 @@
 }
 
 .message-time {
-  font-size: 0.75rem;
-  color: var(--color-gray-500);
-  margin-top: var(--space-2);
-  text-align: right;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.5);
+  padding: var(--space-1) var(--space-6) var(--space-3);
   font-family: var(--font-mono);
+}
+
+.message.user .message-time {
+  text-align: right;
 }
 
 .message.assistant .message-time {
   text-align: left;
+}
+
+/* === 优化的思考指示器 === */
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6);
+}
+
+.typing-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.typing-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  animation: typing 1.4s ease-in-out infinite;
+}
+
+.typing-dots span:nth-child(1) {
+  animation-delay: 0ms;
+}
+
+.typing-dots span:nth-child(2) {
+  animation-delay: 200ms;
+}
+
+.typing-dots span:nth-child(3) {
+  animation-delay: 400ms;
+}
+
+.typing-text {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+@keyframes typing {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-6px);
+    opacity: 1;
+  }
 }
 
 /* === Input Section === */

@@ -123,44 +123,32 @@ const Sidebar: React.FC<SidebarProps> = ({
     const hasChildren = folders.some(f => f.parentId === folder.id);
     
     return (
-      <motion.div 
+      <div 
         key={folder.id} 
         className="folder-item"
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.2, delay: level * 0.05 }}
         style={{ paddingLeft: `${level * 16 + 12}px` }}
       >
-        <motion.div
+        <div
           className={`folder-label ${
             selectedFolder === folder.id ? 'selected' : ''
           }`}
           onClick={() => onSelectFolder(folder.id)}
-          whileHover={{ scale: 1.02, x: 2 }}
-          whileTap={{ scale: 0.98 }}
         >
           <div className="folder-icon">
             <FolderIcon size={16} />
           </div>
           <span className="folder-name">{folder.name}</span>
-        </motion.div>
+        </div>
         
-        <AnimatePresence>
-          {hasChildren && (
-            <motion.div 
-              className="folder-children"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-            >
-              {folders
-                .filter(f => f.parentId === folder.id)
-                .map(childFolder => renderFolder(childFolder, level + 1))
-              }
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
+        {hasChildren && (
+          <div className="folder-children">
+            {folders
+              .filter(f => f.parentId === folder.id)
+              .map(childFolder => renderFolder(childFolder, level + 1))
+            }
+          </div>
+        )}
+      </div>
     );
   };
 
@@ -184,44 +172,30 @@ const Sidebar: React.FC<SidebarProps> = ({
   const rootFolders = folders.filter(f => !f.parentId);
 
   return (
-    <motion.div 
-      className="sidebar-modern"
-      initial={{ x: -280 }}
-      animate={{ x: 0 }}
-      transition={{ duration: 0.3, ease: 'easeOut' }}
-    >
+    <div className="sidebar-modern">
       {/* 头部区域 */}
       <div className="sidebar-header-modern">
-        <motion.div 
-          className="app-logo"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
+        <div className="app-logo">
           <div className="logo-icon">
             <MessageCircle size={24} />
           </div>
           <div className="logo-text">
             <h1>知识管理中心</h1>
-            <p>Knowledge Hub</p>
+            <p>Noeton Hub</p>
           </div>
-        </motion.div>
+        </div>
       </div>
 
       {/* 导航菜单 */}
       <div className="navigation-section">
         <div className="nav-grid">
-          {navigationItems.map((item, index) => (
-            <motion.button
+          {navigationItems.map((item) => (
+            <button
               key={item.id}
               className={`nav-item ${
                 currentView === item.view ? 'active' : ''
               }`}
               onClick={() => onViewChange(item.view)}
-              whileHover={{ scale: 1.02, y: -1 }}
-              whileTap={{ scale: 0.98 }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
             >
               <div className="nav-icon">
                 {item.icon}
@@ -230,35 +204,20 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <span className="nav-label">{item.label}</span>
                 <span className="nav-description">{item.description}</span>
               </div>
-            </motion.button>
+            </button>
           ))}
         </div>
       </div>
 
       {/* 本地服务状态 */}
       <div className="server-status-section">
-        <motion.div 
-          className="server-status-card"
-          whileHover={{ scale: 1.02 }}
-          onClick={checkServerStatus}
-        >
+        <div className="server-status-card" onClick={checkServerStatus}>
           <div className="status-info">
-            <motion.div 
-              className={`status-indicator ${
-                isServerOnline ? 'online' : 'offline'
-              }`}
-              animate={{
-                scale: isServerOnline ? [1, 1.1, 1] : [1],
-                opacity: isServerOnline ? [1, 0.8, 1] : [0.6]
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: 'easeInOut'
-              }}
-            >
+            <div className={`status-indicator ${
+              isServerOnline ? 'online' : 'offline'
+            }`}>
               <Wifi size={14} />
-            </motion.div>
+            </div>
             <div className="status-content">
               <div className="status-text">
                 {isServerOnline ? '本地服务正常' : '服务器离线'}
@@ -269,18 +228,16 @@ const Sidebar: React.FC<SidebarProps> = ({
               </div>
             </div>
           </div>
-          <motion.button
+          <button
             className="refresh-btn"
-            whileHover={{ rotate: 180 }}
-            whileTap={{ scale: 0.9 }}
             onClick={(e) => {
               e.stopPropagation();
               checkServerStatus();
             }}
           >
             <RefreshCw size={12} />
-          </motion.button>
-        </motion.div>
+          </button>
+        </div>
       </div>
 
       {/* 搜索区域 */}
@@ -298,107 +255,84 @@ const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* 文件夹区域 - 仅在知识视图中显示 */}
-      <AnimatePresence>
-        {currentView === 'notes' && (
-          <motion.div 
-            className="folders-section-modern"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className="section-header-modern">
-              <div className="header-content">
-                <FolderIcon size={16} />
-                <h3>文件夹</h3>
+      {currentView === 'notes' && (
+        <div className="folders-section-modern">
+          <div className="section-header-modern">
+            <div className="header-content">
+              <FolderIcon size={16} />
+              <h3>文件夹</h3>
+            </div>
+            <button
+              className="add-folder-btn-modern"
+              onClick={() => setShowCreateFolder(true)}
+              title="新建文件夹"
+            >
+              <Plus size={14} />
+            </button>
+          </div>
+
+          <div className="folders-list-modern">
+            <div
+              className={`folder-item all-notes ${
+                selectedFolder === null ? 'selected' : ''
+              }`}
+              onClick={() => onSelectFolder(null)}
+            >
+              <div className="folder-icon">
+                <FileText size={16} />
               </div>
-              <motion.button
-                className="add-folder-btn-modern"
-                onClick={() => setShowCreateFolder(true)}
-                whileHover={{ scale: 1.1, rotate: 90 }}
-                whileTap={{ scale: 0.9 }}
-                title="新建文件夹"
-              >
-                <Plus size={14} />
-              </motion.button>
+              <span className="folder-name">所有知识</span>
             </div>
 
-            <div className="folders-list-modern">
-              <motion.div
-                className={`folder-item all-notes ${
-                  selectedFolder === null ? 'selected' : ''
-                }`}
-                onClick={() => onSelectFolder(null)}
-                whileHover={{ scale: 1.02, x: 2 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <div className="folder-icon">
-                  <FileText size={16} />
-                </div>
-                <span className="folder-name">所有知识</span>
-              </motion.div>
+            {rootFolders.map(folder => renderFolder(folder))}
+          </div>
 
-              {rootFolders.map(folder => renderFolder(folder))}
-            </div>
-
-            <AnimatePresence>
-              {showCreateFolder && (
-                <motion.form 
-                  onSubmit={handleCreateFolder} 
-                  className="create-folder-form-modern"
-                  initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
+          {showCreateFolder && (
+            <form 
+              onSubmit={handleCreateFolder} 
+              className="create-folder-form-modern"
+            >
+              <input
+                type="text"
+                placeholder="输入文件夹名称"
+                value={newFolderName}
+                onChange={(e) => setNewFolderName(e.target.value)}
+                className="folder-name-input-modern"
+                autoFocus
+              />
+              <div className="form-actions-modern">
+                <button 
+                  type="submit" 
+                  className="create-btn-modern"
                 >
-                  <input
-                    type="text"
-                    placeholder="输入文件夹名称"
-                    value={newFolderName}
-                    onChange={(e) => setNewFolderName(e.target.value)}
-                    className="folder-name-input-modern"
-                    autoFocus
-                  />
-                  <div className="form-actions-modern">
-                    <motion.button 
-                      type="submit" 
-                      className="create-btn-modern"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      创建
-                    </motion.button>
-                    <motion.button
-                      type="button"
-                      className="cancel-btn-modern"
-                      onClick={() => {
-                        setShowCreateFolder(false);
-                        setNewFolderName('');
-                      }}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      取消
-                    </motion.button>
-                  </div>
-                </motion.form>
-              )}
-            </AnimatePresence>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                  创建
+                </button>
+                <button
+                  type="button"
+                  className="cancel-btn-modern"
+                  onClick={() => {
+                    setShowCreateFolder(false);
+                    setNewFolderName('');
+                  }}
+                >
+                  取消
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+      )}
 
       {/* 底部设置 */}
       <div className="sidebar-footer-modern">
-        <motion.button
+        <button
           className="settings-btn-modern"
-          whileHover={{ scale: 1.1, rotate: 90 }}
-          whileTap={{ scale: 0.9 }}
           title="设置"
         >
           <Settings size={16} />
-        </motion.button>
+        </button>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

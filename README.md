@@ -3,6 +3,13 @@
 > **Noeton —— Turn web into your knowledge universe**  
 > **让网页成为你的理念世界**
 
+## 插件侧示例
+
+<img src="chrome-extension/cover.png" alt="网页学习助手封面" width="300"/>
+
+## 桌面端侧示例
+
+<img src="note-desktop-app/desktop.png" alt="知识管理桌面端封面" width="1000"/>
 
 ## 🌟 项目概述
 

@@ -302,46 +302,30 @@ ${summaries}
         )}
 
         {/* 神经对话界面 */}
-        <AnimatePresence>
-          {showChat && (
-            <motion.div 
-              className="chat-section"
-              initial={{ opacity: 0, scale: 0.9, rotateY: -15 }}
-              animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-              exit={{ opacity: 0, scale: 0.95, rotateY: 15 }}
-              transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
-            >
-              <div className="chat-header">
-                <div className="chat-title">
-                  <Brain className="w-5 h-5" />
-                  <span>Noeton AI 助手</span>
-                </div>
-                <motion.button 
-                  className="back-button"
-                  onClick={() => setShowChat(false)}
-                  whileHover={{ 
-                    x: -4, 
-                    scale: 1.05,
-                    transition: { duration: 0.2 }
-                  }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  返回首页
-                </motion.button>
+        {showChat && (
+          <div className="chat-section">
+            <div className="chat-header">
+              <div className="chat-title">
+                <Brain className="w-5 h-5" />
+                <span>Noeton AI 助手</span>
               </div>
+              <button 
+                className="back-button"
+                onClick={() => setShowChat(false)}
+              >
+                <ArrowLeft className="w-4 h-4" />
+                返回首页
+              </button>
+            </div>
 
-              <div className="messages-container">
-                <AnimatePresence>
-                  {messages.map((message) => (
-                    <motion.div
-                      key={message.id}
-                      className={`message ${message.role}`}
-                      initial={{ opacity: 0, y: 30, scale: 0.9 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95, y: -20 }}
-                      whileHover={{ y: -2, transition: { duration: 0.2 } }}
-                    >
+            <div className="messages-container">
+              <div className="messages-list">
+                {messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`message ${message.role}`}
+                  >
+                    <div className="message-bubble">
                       <div className="message-content">
                         <p>{message.content}</p>
                         
@@ -349,50 +333,38 @@ ${summaries}
                           <div className="search-results">
                             <h5>相关知识节点：</h5>
                             {message.searchResults.map((note) => (
-                              <motion.div 
-                                key={note.id} 
-                                className="result-item"
-                                whileHover={{ x: 4, transition: { duration: 0.2 } }}
-                              >
+                              <div key={note.id} className="result-item">
                                 <BookOpen className="w-4 h-4" />
                                 <span>{note.title}</span>
-                              </motion.div>
+                              </div>
                             ))}
                           </div>
                         )}
                       </div>
-                      
-                      <div className="message-time">
-                        {new Date(message.timestamp).toLocaleTimeString()}
-                      </div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
+                    </div>
+                  </div>
+                ))}
                 
                 {isLoading && (
-                  <motion.div
-                    className="message assistant loading"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                  >
-                    <div className="message-content">
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                      >
-                        <Loader2 className="w-5 h-5" />
-                      </motion.div>
-                      <span>正在思考中...</span>
+                  <div className="message assistant typing">
+                    <div className="message-bubble">
+                      <div className="typing-indicator">
+                        <div className="typing-dots">
+                          <span></span>
+                          <span></span>
+                          <span></span>
+                        </div>
+                        <span className="typing-text">正在思考中...</span>
+                      </div>
                     </div>
-                  </motion.div>
+                  </div>
                 )}
-                
-                <div ref={messagesEndRef} />
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              
+              <div ref={messagesEndRef} />
+            </div>
+          </div>
+        )}
 
         {/* 神经输入界面 */}
         <motion.div 
