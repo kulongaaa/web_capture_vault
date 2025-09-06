@@ -1,4 +1,4 @@
-// 笔记相关类型定义
+// 知识相关类型定义
 export interface Note {
   id: string;
   title: string;
@@ -53,7 +53,7 @@ export interface CreateFolderRequest {
   parentId?: string;
 }
 
-// 笔记列表查询参数
+// 知识列表查询参数
 export interface NotesQuery {
   page?: number;
   limit?: number;
@@ -75,5 +75,37 @@ export interface ServerStatus {
   running: boolean;
   port: number;
   version: string;
+}
+
+// Agent对话相关类型
+export interface ChatMessage {
+  id: string;
+  content: string;
+  role: 'user' | 'assistant';
+  timestamp: number;
+  searchResults?: Note[];
+  isLoading?: boolean;
+}
+
+export interface ChatSession {
+  id: string;
+  title: string;
+  messages: ChatMessage[];
+  createdAt: number;
+  updatedAt: number;
+}
+
+// DeepSeek API配置
+export interface DeepSeekConfig {
+  apiKey: string;
+  baseUrl?: string;
+  model?: string;
+}
+
+// 搜索配置
+export interface SearchConfig {
+  maxResults: number;
+  similarityThreshold: number;
+  includeContent: boolean;
 }
 

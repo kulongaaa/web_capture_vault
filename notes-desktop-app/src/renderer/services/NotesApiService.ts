@@ -55,10 +55,10 @@ export class NotesApiService {
     }
   }
 
-  // === 笔记相关方法 ===
+  // === 知识相关方法 ===
 
   /**
-   * 获取笔记列表
+   * 获取知识列表
    */
   async getNotes(query: NotesQuery = {}): Promise<{
     notes: Note[];
@@ -81,14 +81,14 @@ export class NotesApiService {
   }
 
   /**
-   * 获取单个笔记
+   * 获取单个知识
    */
   async getNote(id: string): Promise<Note> {
     return this.request(`/notes/${id}`);
   }
 
   /**
-   * 创建新笔记
+   * 创建新知识
    */
   async createNote(noteData: CreateNoteRequest): Promise<Note> {
     return this.request('/notes', {
@@ -98,7 +98,7 @@ export class NotesApiService {
   }
 
   /**
-   * 更新笔记
+   * 更新知识
    */
   async updateNote(id: string, updateData: UpdateNoteRequest): Promise<Note> {
     return this.request(`/notes/${id}`, {
@@ -108,7 +108,7 @@ export class NotesApiService {
   }
 
   /**
-   * 删除笔记
+   * 删除知识
    */
   async deleteNote(id: string): Promise<void> {
     return this.request(`/notes/${id}`, {
@@ -117,7 +117,7 @@ export class NotesApiService {
   }
 
   /**
-   * 搜索笔记
+   * 搜索知识
    */
   async searchNotes(query: string): Promise<Note[]> {
     const params = new URLSearchParams({ q: query });

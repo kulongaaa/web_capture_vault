@@ -13,9 +13,9 @@ export const setupKoaRoutes = (
   foldersService: FoldersService
 ): void => {
   
-  // === 笔记相关路由 ===
+  // === 知识相关路由 ===
 
-  // 获取笔记列表
+  // 获取知识列表
   router.get('/api/notes', async (ctx: Context) => {
     try {
       const query: NotesQuery = {
@@ -36,13 +36,13 @@ export const setupKoaRoutes = (
       ctx.status = 500;
       ctx.body = {
         success: false,
-        error: '获取笔记列表失败',
+        error: '获取知识列表失败',
         message: (error as any).message
       } as ApiResponse;
     }
   });
 
-  // 获取单个笔记
+  // 获取单个知识
   router.get('/api/notes/:id', async (ctx: Context) => {
     try {
       const note = await notesService.getNote(ctx.params.id);
@@ -51,8 +51,8 @@ export const setupKoaRoutes = (
         ctx.status = 404;
         ctx.body = {
           success: false,
-          error: '笔记不存在',
-          message: `ID为 ${ctx.params.id} 的笔记未找到`
+          error: '知识不存在',
+          message: `ID为 ${ctx.params.id} 的知识未找到`
         } as ApiResponse;
         return;
       }
@@ -65,13 +65,13 @@ export const setupKoaRoutes = (
       ctx.status = 500;
       ctx.body = {
         success: false,
-        error: '获取笔记失败',
+        error: '获取知识失败',
         message: (error as any).message
       } as ApiResponse;
     }
   });
 
-  // 创建新笔记
+  // 创建新知识
   router.post('/api/notes', async (ctx: Context) => {
     try {
       const noteData: CreateNoteRequest = ctx.request.body as CreateNoteRequest;
@@ -93,19 +93,19 @@ export const setupKoaRoutes = (
       ctx.body = {
         success: true,
         data: note,
-        message: '笔记创建成功'
+        message: '知识创建成功'
       } as ApiResponse;
     } catch (error) {
       ctx.status = 500;
       ctx.body = {
         success: false,
-        error: '创建笔记失败',
+        error: '创建知识失败',
         message: (error as any).message
       } as ApiResponse;
     }
   });
 
-  // 更新笔记
+  // 更新知识
   router.put('/api/notes/:id', async (ctx: Context) => {
     try {
       const updateData: UpdateNoteRequest = ctx.request.body as UpdateNoteRequest;
@@ -115,8 +115,8 @@ export const setupKoaRoutes = (
         ctx.status = 404;
         ctx.body = {
           success: false,
-          error: '笔记不存在',
-          message: `ID为 ${ctx.params.id} 的笔记未找到`
+          error: '知识不存在',
+          message: `ID为 ${ctx.params.id} 的知识未找到`
         } as ApiResponse;
         return;
       }
@@ -124,19 +124,19 @@ export const setupKoaRoutes = (
       ctx.body = {
         success: true,
         data: note,
-        message: '笔记更新成功'
+        message: '知识更新成功'
       } as ApiResponse;
     } catch (error) {
       ctx.status = 500;
       ctx.body = {
         success: false,
-        error: '更新笔记失败',
+        error: '更新知识失败',
         message: (error as any).message
       } as ApiResponse;
     }
   });
 
-  // 删除笔记
+  // 删除知识
   router.delete('/api/notes/:id', async (ctx: Context) => {
     try {
       const success = await notesService.deleteNote(ctx.params.id);
@@ -145,21 +145,21 @@ export const setupKoaRoutes = (
         ctx.status = 404;
         ctx.body = {
           success: false,
-          error: '笔记不存在',
-          message: `ID为 ${ctx.params.id} 的笔记未找到`
+          error: '知识不存在',
+          message: `ID为 ${ctx.params.id} 的知识未找到`
         } as ApiResponse;
         return;
       }
 
       ctx.body = {
         success: true,
-        message: '笔记删除成功'
+        message: '知识删除成功'
       } as ApiResponse;
     } catch (error) {
       ctx.status = 500;
       ctx.body = {
         success: false,
-        error: '删除笔记失败',
+        error: '删除知识失败',
         message: (error as any).message
       } as ApiResponse;
     }

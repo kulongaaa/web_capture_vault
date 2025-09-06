@@ -17,14 +17,14 @@ export class ApiService {
   };
 
   /**
-   * 发送网页内容到本地笔记应用
+   * 发送网页内容到本地知识应用
    */
   public static async sendWebContentToNotes(webContent: WebContent): Promise<boolean> {
     try {
       // 首先尝试连接本地桌面应用
       const localSuccess = await this.sendToLocalApp(webContent);
       if (localSuccess) {
-        console.log('网页内容已成功发送到本地笔记应用');
+        console.log('网页内容已成功发送到本地知识应用');
         return true;
       }
 
@@ -46,7 +46,7 @@ export class ApiService {
       const config = await this.getApiConfig();
       const localUrl = config.localUrl || this.DEFAULT_LOCAL_URL;
       
-      // 构造笔记数据
+      // 构造知识数据
       const noteData = {
         title: webContent.title || '未命名网页',
         content: this.formatWebContentAsMarkdown(webContent),
@@ -76,7 +76,7 @@ export class ApiService {
 
       const result = await response.json();
       if (result.success) {
-        console.log('笔记已保存到本地应用:', result.data);
+        console.log('知识已保存到本地应用:', result.data);
         return true;
       } else {
         throw new Error(result.message || '保存失败');

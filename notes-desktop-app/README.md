@@ -1,6 +1,6 @@
-# Notes Desktop App - 本地笔记管理桌面应用
+# Notes Desktop App - 本地知识管理桌面应用
 
-> 基于 Electron + Koa2 + TypeScript 的现代化本地笔记管理应用
+> 基于 Electron + Koa2 + TypeScript 的现代化本地知识管理应用
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)
@@ -9,7 +9,7 @@
 
 ## 📋 项目概述
 
-这是一个完全本地化的笔记管理桌面应用，为用户提供安全、高效、功能丰富的笔记管理体验。应用采用现代化技术栈，支持与浏览器插件的无缝集成。
+这是一个完全本地化的知识管理桌面应用，为用户提供安全、高效、功能丰富的知识管理体验。应用采用现代化技术栈，支持与浏览器插件的无缝集成。
 
 ### 🎯 核心特性
 
@@ -17,7 +17,7 @@
 - **🚀 高性能架构** - Koa2 + TypeScript 后端，React 前端
 - **📝 Markdown 支持** - 完整的 Markdown 编辑和预览功能
 - **📁 智能文件夹管理** - 层次化文件夹结构，支持拖拽操作
-- **🔍 全文搜索** - 快速检索笔记内容和标签
+- **🔍 全文搜索** - 快速检索知识内容和标签
 - **🔗 浏览器插件集成** - 与 Chrome 插件无缝协作
 - **💾 本地数据存储** - 数据完全存储在本地，保护隐私
 - **🎨 现代化界面** - 响应式设计，支持深色模式
@@ -63,8 +63,8 @@ notes-desktop-app/
 │   ├── renderer/              # 渲染进程（React 应用）
 │   │   ├── components/        # React 组件
 │   │   │   ├── Sidebar.tsx    # 侧边栏组件
-│   │   │   ├── NoteList.tsx   # 笔记列表组件
-│   │   │   └── NoteEditor.tsx # 笔记编辑器组件
+│   │   │   ├── NoteList.tsx   # 知识列表组件
+│   │   │   └── NoteEditor.tsx # 知识编辑器组件
 │   │   ├── services/          # 前端服务
 │   │   │   └── NotesApiService.ts # API 调用服务
 │   │   ├── styles/            # 样式文件
@@ -75,7 +75,7 @@ notes-desktop-app/
 │   │   └── index.html         # HTML 模板
 │   ├── server/                # Koa2 服务器
 │   │   ├── services/          # 业务逻辑服务
-│   │   │   ├── NotesService.ts    # 笔记服务
+│   │   │   ├── NotesService.ts    # 知识服务
 │   │   │   └── FoldersService.ts  # 文件夹服务
 │   │   ├── index.ts           # 服务器入口
 │   │   ├── middleware.ts      # Koa 中间件
@@ -141,9 +141,9 @@ npm run dev:server    # 服务器开发模式
 - **Content-Type**: `application/json`
 - **Authentication**: 本地 Token（可选）
 
-### 笔记管理 API
+### 知识管理 API
 
-#### 获取笔记列表
+#### 获取知识列表
 ```http
 GET /api/notes
 ```
@@ -155,17 +155,17 @@ GET /api/notes
 - `search` (string): 搜索关键词
 - `tags` (string): 标签筛选，逗号分隔
 
-#### 创建笔记
+#### 创建知识
 ```http
 POST /api/notes
 ```
 
-#### 更新笔记
+#### 更新知识
 ```http
 PUT /api/notes/:id
 ```
 
-#### 删除笔记
+#### 删除知识
 ```http
 DELETE /api/notes/:id
 ```
@@ -210,7 +210,7 @@ GET /api/stats
 
 ```
 NotesDesktopApp/
-├── notes.json          # 笔记数据
+├── notes.json          # 知识数据
 ├── folders.json        # 文件夹数据
 └── config.json         # 应用配置
 ```
@@ -288,4 +288,4 @@ MIT License - 详见 LICENSE 文件
 
 ---
 
-**Notes Desktop App** - 让本地笔记管理更简单、更安全、更高效！
+**Notes Desktop App** - 让本地知识管理更简单、更安全、更高效！

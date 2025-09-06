@@ -1,7 +1,7 @@
 {
-  "name": "notes-desktop-app",
+  "name": "knowledge-management-center",
   "version": "1.0.0",
-  "description": "本地笔记管理桌面应用程序",
+  "description": "智能知识管理中心 - AI驱动的个人知识助手",
   "main": "dist/main/main.js",
   "type": "commonjs",
   "scripts": {
@@ -21,13 +21,17 @@
   },
   "keywords": [
     "electron",
+    "knowledge-management",
+    "ai-assistant",
     "notes",
     "markdown",
     "desktop-app",
     "react",
-    "typescript"
+    "typescript",
+    "deepseek",
+    "smart-search"
   ],
-  "author": "Notes Desktop App Team",
+  "author": "Knowledge Management Center Team",
   "license": "MIT",
   "devDependencies": {
     "@types/koa": "^2.15.0",
@@ -55,15 +59,19 @@
     "webpack-dev-server": "^4.15.1"
   },
   "dependencies": {
-    "@koa/router": "^12.0.1",
     "@koa/cors": "^4.0.0",
+    "@koa/router": "^12.0.1",
+    "framer-motion": "^12.23.12",
     "koa": "^2.16.2",
     "koa-bodyparser": "^4.4.1",
     "koa-json": "^2.0.2",
     "koa-logger": "^3.2.1",
+    "lucide-react": "^0.542.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-markdown": "^9.0.1",
+    "react-icons": "^5.5.0",
+    "react-markdown": "^9.1.0",
+    "react-syntax-highlighter": "^15.6.6",
     "uuid": "^9.0.1"
   }
 }

@@ -80,9 +80,9 @@ class BackgroundService {
       }
       
       // 发送状态更新
-      await this.sendStatusUpdate(sender.tab?.id, 'learning', '正在发送到本地笔记应用...');
+      await this.sendStatusUpdate(sender.tab?.id, 'learning', '正在发送到本地知识应用...');
       
-      // 发送到本地笔记应用
+      // 发送到本地知识应用
       const success = await ApiService.sendWebContentToNotes(content);
       
       if (success) {
@@ -94,9 +94,9 @@ class BackgroundService {
         sendResponse(response);
         
         // 发送完成状态
-        await this.sendStatusUpdate(sender.tab?.id, 'completed', '笔记已保存到本地应用！');
+        await this.sendStatusUpdate(sender.tab?.id, 'completed', '知识已保存到本地应用！');
       } else {
-        throw new Error('发送到笔记应用失败');
+        throw new Error('发送到知识应用失败');
       }
     } catch (error) {
       console.error('Learning request failed:', error);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Note } from '../../types';
+import '../styles/NoteEditor.css';
 
 interface NoteEditorProps {
   note: Note | null;
@@ -18,7 +19,7 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
   const [isPreview, setIsPreview] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
-  // 当选中的笔记改变时，更新编辑器内容
+  // 当选中的知识改变时，更新编辑器内容
   useEffect(() => {
     if (note) {
       setTitle(note.title);
@@ -44,7 +45,7 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
 
   const handleSave = () => {
     if (!title.trim()) {
-      alert('请输入笔记标题');
+      alert('请输入知识标题');
       return;
     }
 
@@ -136,7 +137,7 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
           <div className="editor-header">
             <input
               type="text"
-              placeholder="输入笔记标题..."
+              placeholder="输入知识标题..."
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="title-input"
@@ -220,7 +221,7 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
               </div>
             ) : (
               <textarea
-                placeholder="开始编写你的笔记... 支持 Markdown 格式"
+                placeholder="开始编写你的知识... 支持 Markdown 格式"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 className="content-textarea"
@@ -247,8 +248,8 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
       ) : (
         <div className="empty-editor">
           <div className="empty-icon">📝</div>
-          <h3>选择一个笔记开始编辑</h3>
-          <p>或者创建一个新笔记来开始写作</p>
+          <h3>选择一个知识开始编辑</h3>
+          <p>或者创建一个新知识来开始写作</p>
         </div>
       )}
     </div>

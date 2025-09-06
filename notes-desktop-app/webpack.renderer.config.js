@@ -1,8 +1,8 @@
-const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const path = require('path');
 
 module.exports = {
-  target: 'web', // 修改为 web，因为我们在 electron 渲染进程中运行
+  target: 'web',
   entry: './src/renderer/index.tsx',
   output: {
     path: path.resolve(__dirname, 'dist/renderer'),
@@ -24,6 +24,13 @@ module.exports = {
       {
         test: /\.css$/,
         use: ['style-loader', 'css-loader'],
+      },
+      {
+        test: /\.(png|jpe?g|gif|svg|ico)$/i,
+        type: 'asset/resource',
+        generator: {
+          filename: 'images/[name][ext]'
+        }
       },
     ],
   },

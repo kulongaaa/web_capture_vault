@@ -11,7 +11,7 @@ import { setupKoaMiddleware } from './middleware';
 import { setupKoaRoutes } from './routes';
 
 /**
- * 基于Koa2的本地笔记服务器
+ * 基于Koa2的本地知识服务器
  * 提供轻量级、高性能的TypeScript REST API服务
  */
 class KoaLocalServer {
@@ -75,7 +75,7 @@ class KoaLocalServer {
       }
 
       this.server = this.app.listen(port, '127.0.0.1', () => {
-        console.log(`Koa笔记本地服务器启动成功，监听端口: ${port}`);
+        console.log(`Koa知识本地服务器启动成功，监听端口: ${port}`);
         console.log(`API地址: http://127.0.0.1:${port}`);
         console.log(`框架: Koa2 + TypeScript`);
         resolve();
@@ -103,7 +103,7 @@ class KoaLocalServer {
           reject(err);
         } else {
           this.server = null;
-          console.log('Koa笔记本地服务器已停止');
+          console.log('Koa知识本地服务器已停止');
           resolve();
         }
       });

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Note } from '../../types';
+import '../styles/NoteList.css';
 
 interface NoteListProps {
   notes: Note[];
@@ -35,7 +36,7 @@ const NoteList: React.FC<NoteListProps> = ({
 
   const handleDeleteNote = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    if (confirm('确定要删除这个笔记吗？')) {
+    if (confirm('确定要删除这个知识吗？')) {
       onDeleteNote(id);
     }
   };
@@ -81,13 +82,13 @@ const NoteList: React.FC<NoteListProps> = ({
   return (
     <div className="note-list">
       <div className="note-list-header">
-        <h3>笔记列表 ({notes.length})</h3>
+        <h3>知识列表 ({notes.length})</h3>
         <button
           className="new-note-btn"
           onClick={() => setShowCreateNote(true)}
-          title="新建笔记"
+          title="新建知识"
         >
-          ➕ 新建笔记
+          ➕ 新建知识
         </button>
       </div>
 
@@ -95,7 +96,7 @@ const NoteList: React.FC<NoteListProps> = ({
         <form onSubmit={handleCreateNote} className="create-note-form">
           <input
             type="text"
-            placeholder="笔记标题"
+            placeholder="知识标题"
             value={newNoteTitle}
             onChange={(e) => setNewNoteTitle(e.target.value)}
             className="note-title-input"
@@ -126,8 +127,8 @@ const NoteList: React.FC<NoteListProps> = ({
         ) : notes.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon">📝</div>
-            <h4>暂无笔记</h4>
-            <p>点击上方的"新建笔记"按钮创建第一个笔记</p>
+            <h4>暂无知识</h4>
+            <p>点击上方的"新建知识"按钮创建第一个知识</p>
           </div>
         ) : (
           <div className="notes-list">
@@ -142,7 +143,7 @@ const NoteList: React.FC<NoteListProps> = ({
                   <button
                     className="delete-note-btn"
                     onClick={(e) => handleDeleteNote(e, note.id)}
-                    title="删除笔记"
+                    title="删除知识"
                   >
                     🗑️
                   </button>

@@ -1,9 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Note, Folder } from '../types';
+import React, { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Note, Folder, ChatMessage } from '../types';
 import Sidebar from './components/Sidebar';
 import NoteEditor from './components/NoteEditor';
 import NoteList from './components/NoteList';
+import AgentHomepage from './components/AgentHomepage';
 import { NotesApiService } from './services/NotesApiService';
+import ChatService from './services/ChatService';
+import SmartSearchService from './services/SmartSearchService';
 import './styles/App.css';
 
 interface AppState {
@@ -14,6 +18,8 @@ interface AppState {
   isLoading: boolean;
   searchQuery: string;
   error: string | null;
+  currentView: 'agent' | 'notes';
+  chatMessages: ChatMessage[];
 }
 
 const App: React.FC = () => {
@@ -24,10 +30,17 @@ const App: React.FC = () => {
     selectedFolder: null,
     isLoading: true, // 初始状态为加载中
     searchQuery: '',
-    error: null
+    error: null,
+    currentView: 'agent', // 默认显示Agent首页
+    chatMessages: []
   });
 
   const [apiService] = useState(() => new NotesApiService());
+  const [chatService] = useState(() => new ChatService({
+    apiKey: '', // 这里后续会从配置中加载
+    model: 'deepseek-chat'
+  }));
+  const [searchService] = useState(() => new SmartSearchService());
 
   // 加载初始数据
   useEffect(() => {
@@ -95,9 +108,24 @@ const App: React.FC = () => {
         isLoading: false
       }));
     } catch (error) {
-      console.error('加载文件夹笔记失败:', error);
+      console.error('加载文件夹知识失败:', error);
       setState(prev => ({ ...prev, isLoading: false }));
     }
+  };
+
+  // 切换视图
+  const handleViewChange = (view: 'agent' | 'notes') => {
+    setState(prev => ({ ...prev, currentView: view }));
+  };
+
+  // 导航到知识页面
+  const handleNavigateToNotes = () => {
+    setState(prev => ({ ...prev, currentView: 'notes' }));
+  };
+
+  // Agent搜索函数（返回Promise）
+  const handleAgentSearch = async (query: string): Promise<Note[]> => {
+    return await handleSearch(query);
   };
 
   const handleCreateNote = async (noteData: { title: string; content: string }) => {
@@ -113,7 +141,7 @@ const App: React.FC = () => {
         selectedNote: newNote
       }));
     } catch (error) {
-      console.error('创建笔记失败:', error);
+      console.error('创建知识失败:', error);
     }
   };
 
@@ -128,7 +156,7 @@ const App: React.FC = () => {
         }));
       }
     } catch (error) {
-      console.error('更新笔记失败:', error);
+      console.error('更新知识失败:', error);
     }
   };
 
@@ -141,7 +169,7 @@ const App: React.FC = () => {
         selectedNote: prev.selectedNote?.id === id ? null : prev.selectedNote
       }));
     } catch (error) {
-      console.error('删除笔记失败:', error);
+      console.error('删除知识失败:', error);
     }
   };
 
@@ -154,24 +182,37 @@ const App: React.FC = () => {
     }
   };
 
-  const handleSearch = async (query: string) => {
-    setState(prev => ({ ...prev, searchQuery: query, isLoading: true }));
+  const handleSearch = async (query: string): Promise<Note[]> => {
+    // 避免不必要的状态更新导致重新渲染
+    if (state.searchQuery === query) {
+      return state.notes;
+    }
+    
+    setState(prev => ({ ...prev, searchQuery: query }));
     
     if (!query.trim()) {
-      loadNotesForFolder(state.selectedFolder);
-      return;
+      // 重新加载所有知识，但不设置loading状态避免重置
+      try {
+        const result = await apiService.getNotes({ folderId: state.selectedFolder || undefined });
+        const notes = result.notes;
+        setState(prev => ({ ...prev, notes }));
+        return notes;
+      } catch (error) {
+        console.error('重新加载知识失败:', error);
+        return state.notes;
+      }
     }
 
     try {
-      const results = await apiService.searchNotes(query);
-      setState(prev => ({
-        ...prev,
-        notes: results,
-        isLoading: false
-      }));
+      // 使用智能搜索服务
+      const searchResults = await searchService.searchNotes(state.notes, query);
+      const notes = searchResults.map(result => result.note);
+      
+      setState(prev => ({ ...prev, notes }));
+      return notes;
     } catch (error) {
       console.error('搜索失败:', error);
-      setState(prev => ({ ...prev, isLoading: false }));
+      return state.notes;
     }
   };
 
@@ -180,7 +221,7 @@ const App: React.FC = () => {
       {state.error ? (
         <div className="error-overlay">
           <div className="error-message">
-            <h3>加载出错</h3>
+            <h3>连接失败</h3>
             <p>{state.error}</p>
             <button onClick={loadInitialData} className="retry-btn">
               重新连接
@@ -191,7 +232,7 @@ const App: React.FC = () => {
         <div className="loading-overlay">
           <div className="loading-content">
             <div className="loading-spinner"></div>
-            <p>正在加载笔记应用...</p>
+            <p>正在启动知识管理中心...</p>
           </div>
         </div>
       ) : (
@@ -203,23 +244,53 @@ const App: React.FC = () => {
             onCreateFolder={handleCreateFolder}
             onSearch={handleSearch}
             searchQuery={state.searchQuery}
+            currentView={state.currentView}
+            onViewChange={handleViewChange}
           />
           
           <div className="main-content">
-            <NoteList
-              notes={state.notes}
-              selectedNote={state.selectedNote}
-              onSelectNote={handleSelectNote}
-              onCreateNote={handleCreateNote}
-              onDeleteNote={handleDeleteNote}
-              isLoading={false}
-            />
-            
-            <NoteEditor
-              note={state.selectedNote}
-              onUpdateNote={handleUpdateNote}
-              onCreateNote={handleCreateNote}
-            />
+            <AnimatePresence mode="wait">
+              {state.currentView === 'agent' ? (
+                <motion.div
+                  key="agent"
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.98 }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                  className="agent-view"
+                >
+                  <AgentHomepage
+                    notes={state.notes}
+                    onSearch={handleAgentSearch}
+                    onNavigateToNotes={handleNavigateToNotes}
+                  />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="notes"
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.98 }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                  className="notes-view"
+                >
+                  <NoteList
+                    notes={state.notes}
+                    selectedNote={state.selectedNote}
+                    onSelectNote={handleSelectNote}
+                    onCreateNote={handleCreateNote}
+                    onDeleteNote={handleDeleteNote}
+                    isLoading={false}
+                  />
+                  
+                  <NoteEditor
+                    note={state.selectedNote}
+                    onUpdateNote={handleUpdateNote}
+                    onCreateNote={handleCreateNote}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       )}

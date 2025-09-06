@@ -47,6 +47,7 @@ class ElectronApp {
       height: 800,
       minWidth: 800,
       minHeight: 600,
+      title: '知识管理中心',
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,

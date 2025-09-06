@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Note, CreateNoteRequest, UpdateNoteRequest, NotesQuery } from '../../types';
 
 /**
- * 笔记服务类 - 负责笔记的CRUD操作
+ * 知识服务类 - 负责知识的CRUD操作
  */
 export class NotesService {
   private dataDir: string;
@@ -46,16 +46,16 @@ export class NotesService {
       // 确保数据目录存在
       await fs.mkdir(this.dataDir, { recursive: true });
       
-      // 加载现有笔记
+      // 加载现有知识
       await this.loadNotes();
     } catch (error) {
-      console.error('初始化笔记数据失败:', error);
+      console.error('初始化知识数据失败:', error);
       throw error;
     }
   }
 
   /**
-   * 从文件加载笔记
+   * 从文件加载知识
    */
   private async loadNotes(): Promise<void> {
     try {
@@ -67,34 +67,34 @@ export class NotesService {
         this.notes.set(note.id, note);
       });
       
-      console.log(`已加载 ${this.notes.size} 个笔记`);
+      console.log(`已加载 ${this.notes.size} 个知识`);
     } catch (error) {
       if ((error as any).code === 'ENOENT') {
         // 文件不存在，创建空文件
         await this.saveNotes();
-        console.log('创建新的笔记文件');
+        console.log('创建新的知识文件');
       } else {
-        console.error('加载笔记失败:', error);
+        console.error('加载知识失败:', error);
         throw error;
       }
     }
   }
 
   /**
-   * 保存笔记到文件
+   * 保存知识到文件
    */
   private async saveNotes(): Promise<void> {
     try {
       const notesArray = Array.from(this.notes.values());
       await fs.writeFile(this.notesFile, JSON.stringify(notesArray, null, 2), 'utf-8');
     } catch (error) {
-      console.error('保存笔记失败:', error);
+      console.error('保存知识失败:', error);
       throw error;
     }
   }
 
   /**
-   * 获取笔记列表
+   * 获取知识列表
    */
   public async getNotes(query: NotesQuery): Promise<{
     notes: Note[];
@@ -146,14 +146,14 @@ export class NotesService {
   }
 
   /**
-   * 获取单个笔记
+   * 获取单个知识
    */
   public async getNote(id: string): Promise<Note | null> {
     return this.notes.get(id) || null;
   }
 
   /**
-   * 创建新笔记
+   * 创建新知识
    */
   public async createNote(noteData: CreateNoteRequest): Promise<Note> {
     const now = Date.now();
@@ -172,12 +172,12 @@ export class NotesService {
     this.notes.set(note.id, note);
     await this.saveNotes();
 
-    console.log(`创建新笔记: ${note.title} (ID: ${note.id})`);
+    console.log(`创建新知识: ${note.title} (ID: ${note.id})`);
     return note;
   }
 
   /**
-   * 更新笔记
+   * 更新知识
    */
   public async updateNote(id: string, updateData: UpdateNoteRequest): Promise<Note | null> {
     const note = this.notes.get(id);
@@ -194,12 +194,12 @@ export class NotesService {
     this.notes.set(id, updatedNote);
     await this.saveNotes();
 
-    console.log(`更新笔记: ${updatedNote.title} (ID: ${id})`);
+    console.log(`更新知识: ${updatedNote.title} (ID: ${id})`);
     return updatedNote;
   }
 
   /**
-   * 删除笔记
+   * 删除知识
    */
   public async deleteNote(id: string): Promise<boolean> {
     const note = this.notes.get(id);
@@ -210,12 +210,12 @@ export class NotesService {
     this.notes.delete(id);
     await this.saveNotes();
 
-    console.log(`删除笔记: ${note.title} (ID: ${id})`);
+    console.log(`删除知识: ${note.title} (ID: ${id})`);
     return true;
   }
 
   /**
-   * 搜索笔记
+   * 搜索知识
    */
   public async searchNotes(query: string): Promise<Note[]> {
     const searchLower = query.toLowerCase();
@@ -250,7 +250,7 @@ export class NotesService {
   }> {
     const notes = Array.from(this.notes.values());
     
-    // 最近的笔记（最近7天）
+    // 最近的知识（最近7天）
     const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
     const recentNotes = notes
       .filter(note => note.createdAt > sevenDaysAgo)

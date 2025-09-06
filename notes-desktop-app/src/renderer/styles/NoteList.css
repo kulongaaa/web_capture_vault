@@ -1,0 +1,494 @@
+/* === 苹果风格深色知识列表 === */
+
+.note-list {
+  width: 360px;
+  background: linear-gradient(145deg, rgba(0, 0, 0, 0.95) 0%, rgba(26, 26, 26, 0.9) 100%);
+  backdrop-filter: var(--backdrop-blur-xl);
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.note-list::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 30% 20%, rgba(102, 126, 234, 0.06) 0%, transparent 60%),
+    radial-gradient(circle at 70% 80%, rgba(118, 75, 162, 0.04) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.note-list::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+  z-index: 1;
+}
+
+/* === 知识列表头部 === */
+.note-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-6);
+  border-bottom: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.02);
+  position: relative;
+  z-index: 2;
+}
+
+.note-list-header h3 {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.new-note-btn {
+  background: var(--gradient-blue);
+  color: var(--color-white);
+  border: none;
+  padding: var(--spacing-3) var(--spacing-5);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  transition: var(--transition-normal);
+  box-shadow: var(--shadow-glow-blue);
+  position: relative;
+  overflow: hidden;
+}
+
+.new-note-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: var(--gradient-shimmer);
+  transition: left 0.6s var(--ease-out);
+}
+
+.new-note-btn:hover::before {
+  left: 100%;
+}
+
+.new-note-btn:hover {
+  transform: translateY(-1px) scale(1.05);
+  box-shadow: var(--shadow-lg), var(--shadow-glow-blue);
+}
+
+/* === 创建知识表单 === */
+.create-note-form {
+  margin: var(--spacing-4);
+  padding: var(--spacing-5);
+  background: var(--gradient-glass);
+  backdrop-filter: var(--backdrop-blur);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  z-index: 2;
+}
+
+.note-title-input {
+  width: 100%;
+  margin-bottom: var(--spacing-4);
+  padding: var(--spacing-4);
+  font-size: var(--text-base);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-primary);
+  transition: var(--transition-normal);
+  font-family: var(--font-family-sans);
+}
+
+.note-title-input:focus {
+  border-color: var(--color-blue-500);
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2), var(--shadow-md);
+  background: rgba(255, 255, 255, 0.08);
+  outline: none;
+}
+
+.note-title-input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.form-actions {
+  display: flex;
+  gap: var(--spacing-3);
+}
+
+.create-btn,
+.cancel-btn {
+  flex: 1;
+  padding: var(--spacing-3) var(--spacing-5);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  transition: var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.create-btn::before,
+.cancel-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: var(--gradient-shimmer);
+  transition: left 0.6s var(--ease-out);
+}
+
+.create-btn:hover::before,
+.cancel-btn:hover::before {
+  left: 100%;
+}
+
+.create-btn {
+  background: var(--gradient-success);
+  color: var(--color-white);
+  border: 1px solid transparent;
+  box-shadow: var(--shadow-glow-success);
+}
+
+.create-btn:hover {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: var(--shadow-lg), var(--shadow-glow-success);
+}
+
+.cancel-btn {
+  background: var(--gradient-glass);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+}
+
+.cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-text-primary);
+  border-color: var(--color-border-light);
+  transform: translateY(-1px);
+}
+
+/* === 知识容器 === */
+.notes-container {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 2;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: var(--spacing-16) var(--spacing-6);
+  color: var(--color-text-tertiary);
+  font-size: var(--text-sm);
+  gap: var(--spacing-4);
+}
+
+.loading-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--color-border);
+  border-top: 2px solid var(--color-blue-500);
+  border-radius: var(--radius-full);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.notes-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-3) 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-grey-600) transparent;
+}
+
+.notes-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notes-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.notes-list::-webkit-scrollbar-thumb {
+  background: var(--color-grey-600);
+  border-radius: var(--radius-full);
+}
+
+.notes-list::-webkit-scrollbar-thumb:hover {
+  background: var(--color-grey-500);
+}
+
+/* === 知识项 === */
+.note-item {
+  margin: 0 var(--spacing-4) var(--spacing-3);
+  padding: var(--spacing-5);
+  background: var(--gradient-glass);
+  backdrop-filter: var(--backdrop-blur);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  transition: var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.note-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: var(--gradient-shimmer);
+  transition: left 0.6s var(--ease-out);
+}
+
+.note-item:hover::before {
+  left: 100%;
+}
+
+.note-item:hover {
+  border-color: var(--color-border-light);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px) scale(1.02);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.note-item.selected {
+  border-color: var(--color-blue-500);
+  background: rgba(14, 165, 233, 0.1);
+  box-shadow: var(--shadow-glow-blue);
+  transform: translateY(-2px);
+}
+
+.note-item.selected:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: var(--shadow-xl), var(--shadow-glow-blue);
+}
+
+.note-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--spacing-3);
+}
+
+.note-title {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+  line-height: var(--leading-tight);
+  flex: 1;
+  margin-right: var(--spacing-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.delete-note-btn {
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  opacity: 0;
+  transition: var(--transition-normal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.note-item:hover .delete-note-btn {
+  opacity: 1;
+}
+
+.delete-note-btn:hover {
+  background: rgba(248, 113, 113, 0.1);
+  color: var(--color-error);
+  transform: scale(1.1);
+}
+
+.note-preview {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  line-height: var(--leading-relaxed);
+  margin-bottom: var(--spacing-4);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.note-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-3);
+  align-items: center;
+  font-size: var(--text-xs);
+  color: var(--color-text-quaternary);
+}
+
+.note-date {
+  color: var(--color-text-tertiary);
+  font-family: var(--font-family-mono);
+  font-weight: var(--font-medium);
+}
+
+.note-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-1);
+}
+
+.tag {
+  background: rgba(102, 126, 234, 0.1);
+  color: var(--color-blue-400);
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.tag-more {
+  color: var(--color-text-quaternary);
+  font-style: italic;
+  font-size: var(--text-xs);
+}
+
+.note-source {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+}
+
+.source-icon {
+  font-size: var(--text-xs);
+  opacity: 0.8;
+}
+
+.source-text {
+  color: var(--color-text-quaternary);
+  font-size: var(--text-xs);
+}
+
+/* === 空状态 === */
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-16) var(--spacing-6);
+  text-align: center;
+  color: var(--color-text-tertiary);
+}
+
+.empty-icon {
+  font-size: 64px;
+  margin-bottom: var(--spacing-6);
+  opacity: 0.6;
+  filter: grayscale(0.5);
+}
+
+.empty-state h4 {
+  margin-bottom: var(--spacing-3);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-lg);
+}
+
+.empty-state p {
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+  max-width: 280px;
+  opacity: 0.8;
+}
+
+/* === 响应式设计 === */
+@media (max-width: 1200px) {
+  .note-list {
+    width: 320px;
+  }
+}
+
+@media (max-width: 768px) {
+  .note-list {
+    width: 100%;
+    height: 250px;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+  }
+  
+  .note-item {
+    margin: 0 var(--spacing-3) var(--spacing-2);
+    padding: var(--spacing-4);
+  }
+  
+  .note-list-header {
+    padding: var(--spacing-4);
+  }
+}
+
+/* === 动画效果 === */
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.note-item {
+  animation: slideInLeft 0.3s var(--ease-out);
+}
+
+.note-item:nth-child(even) {
+  animation-delay: 0.1s;
+}
+
+.note-item:nth-child(odd) {
+  animation-delay: 0.05s;
+}

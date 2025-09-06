@@ -253,7 +253,7 @@ export class FoldersService {
       throw new Error('无法删除包含子文件夹的文件夹，请先删除子文件夹');
     }
 
-    // TODO: 检查是否有笔记，这需要与NotesService协调
+    // TODO: 检查是否有知识，这需要与NotesService协调
     // 可以通过依赖注入或者事件系统来实现
 
     this.folders.delete(id);
